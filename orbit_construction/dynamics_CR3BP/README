@@ -1,0 +1,88 @@
+dynamics_CR3BP 2009-July-07	Shane Ross
+
+INTRODUCTION
+ 
+A Matlab toolkit for use with
+
+Dynamical Systems, the Three-Body Problem and Space Mission Design 
+W.S. Koon, M.W. Lo, J.E. Marsden and S.D. Ross 
+ISBN 978-0-615-24095-4 
+Marsden Books, 2008.
+
+http://www.shaneross.com/books
+
+
+QUICK STUFF
+
+Within Matlab, run_me.m is a script which performs an example 
+calculation of a family of periodic orbits (po's) around a
+saddle x center equilibrium point in the planar circular
+restricted three-body problem (pcr3bp).  The equil. point is on
+the x-axis.  To run the routine, just run from Matlab,
+
+>> run_me
+
+The routine plots the family of orbits after it computes them. 
+Also plots one branch of unstable manifold for the largest orbit in the family.
+
+
+THE FUNCTIONS
+
+This package is an example package which will need modification
+for your problem of interest.  As of now, it is configured for the
+three-body problem, thus the 3BP appearing in the file names.  From
+Matlab you can get descriptions of most of the functions, e.g.,
+
+>> help poGuessLinear3BP
+
+will give you a description of the inputs and outputs of this function.
+
+In what follows, the functions called in run_me.m are briefly described.  
+You will need to look at the functions themselves and modify them.  
+Hopefully there are enough comments within the files themselves that you 
+can do this easily.  Subfunctions used by other functions are indented
+below the function which calls them.
+
+poFamGet3BP - Generate a family of periodic orbits given a pair of
+	seed initial conditions and periods of two small po's
+
+  poGuessLinear3BP - provides an initial guess for an initial condition
+	along a periodic orbit (po) as well as a guess for the period
+
+    eqPointLoc3BP - provides the position space location of the equilibrium
+	point (ep) around which the po is to be computed.  This is done
+	by solving a polynomial arising from setting the vector field to 
+	zero (equivalently, the critical points of the effective potential)
+
+      gamma3BP - a function used by eqPointLoc3BP
+
+    eqPointEig3BP - provides the eigenvalues and eigenvectors of 
+	Jacobian of the vector field at the ep
+
+      eigGet - Compute the eigenvalues and eigenvectors of the Jacobian 
+ 	matrix A spanning the three local subspaces <Es,Eu,Ec>
+  
+        cleanUpMatrix - used by eigGet, it removes all entries in matrix A
+	with absolute value smaller than a set tolerance
+
+  poDifCor3BP - This is the differential correction routine to create a
+	periodic orbit (po) about an equilibrium point. Keeps the initial  
+	x-value constant and varies the y-velocity value.  It starts from
+	the initial guess provided by poGuessLinear3BP.  It usually 
+	converges to an accurate solution within a few iterations for 
+	this example problem.
+ 
+  poManiLocal3BP - Computes (un)stable manifold for a periodic
+	orbit (of period T) from eigenvalues of the monodromy PHI(T,0) 
+	matrix
+
+    pcr3bp - the vector field of the pcr3bp, 4 first order ODEs
+
+    stateTransitionMatrix3BP - Gets state transition matrix, phi_tf =
+	PHI(0,tf), and the trajectory (x,t) for a length of time, tf.
+
+      varEqs3BP - the variational equations used to get the state transition
+	matrix; these are 16+4=20 first order ODEs
+
+trajGet3BP - this routine finds solutions of the vector field given an
+	initial condition, starting time and ending time
