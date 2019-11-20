@@ -16,7 +16,6 @@
 !
 !   LIST OF DEPENDENCIES
 !   --------------------
-!   DynamicalArrays (included as a module)
 !   OpenMP
 !   gFortran with --free-fform
 !   Minor bodies database as .csv
@@ -30,118 +29,148 @@
 !   CHANGELOG
 !   ---------
 !   1/1/18: Bug fixes
+!   2/2/2019: Minor refactoring
 !
 
 
 program main
 
     use omp_lib
+    use constants                                                                           ! Standardises constants for use in all Fortran codes
+    use iso_fortran_env, only : error_unit 
+
     implicit none
 
-    integer :: nthreads = 8 ! Number of threads to use
-    integer :: unitno, candidatecount, itercount, threadno
-    integer :: i, j, k ! Loop variables
-    integer :: bodyID
+    integer                         :: nthreads = 2                                          ! Number of threads to use
+    integer                         :: unitno, candidatecount, itercount                     ! Counting variables
+    integer                         :: i, j, k                                               ! Loop variables 
+    integer                         :: bodyID                                                ! SPK ID of the body being investigated
+    integer                         :: desireddate                                           ! Week ID to compute the solution for
+                                                                                             ! For use on Lyceum, the input was parameterised by date. At higher core counts,
+                                                                                             ! It becomes feasible to do all dates at once.
 
-    real :: a_b, e_b, inb, rp_t, e_t, in_t, start, finish
-    real :: mindV, au
-    real :: t1, t2, t3, t4, t5, date, o, Om, M, p
+    real                            :: a_b                                                   ! SMA of body
+    real                            :: e_b                                                   ! Eccentricity of body 
+    real                            :: inb                                                   ! Inclination of body (rad!!)
+    real                            :: rp_t                                                  ! Periapse radius of target
+    real                            :: e_t
+    real                            :: in_t                                                  ! Inclination of target (deg!!)
+    real                            :: start                                                 ! OMP WTIME timing
+    real                            :: finish                                                ! ""
+    real                            :: M_t                                                   ! Mean anomaly of the target
+    real                            :: mindV                                                 ! minimum delta V
+    real                            :: t1, t2, t3, t4, t5, date, o, Om, M, p                 ! Temporary variables
 
+    integer, dimension(17719)       :: database                                              ! SPK ID Database
 
-    integer, dimension(17719) :: database
+    real,    dimension(1353, 3)     :: bodyData                                              ! rp_b, e_b, inb,  of the target body (needed only for Hohmann)
+    real,    dimension(360000,4)    :: targetData                                            ! rp_b, e_t, in_t, M_t of the target manifold section
 
-    real, dimension(1353, 3) :: bodyData
-    real, dimension(3046544,3) :: targetData
+    character(len=260)              :: bodystring, filepath                                  ! String of the body SPK ID (file IO), filepath for directory prefix
+    character(len=8)                :: fmt = '(I7.7)'                                        ! Formatting for result I/O
 
-    character(len=260) :: bodystring, filepath
-    character(len=8) :: fmt = '(I7.7)'
+    ! Variable initialisations
 
-    candidatecount = 0
-    itercount = 0
-    au =  1.495978707e8
-    filepath = 'corrected_oe/'
+    candidatecount = 0                                                                        ! Number of candidates found                                                          
+    itercount = 0                                                                             ! Number of weeks processed
+    filepath = 'corrected_oe/'                                                                ! Directory prefix: alter as req'd
 
     ! Print welcome message
-
-    call system('clear')
 
     write(*,*) "============================================================"
     write(*,*) " "
     write(*,*) "ASTEROID PRUNING PRE-FILTER: FORTRAN08 IMPLEMENTATION"
+    write(*,*) " "
+    write(*,*) "LYCEUM VERSION: LIMITED PRINTING CAPABILITIES AVAILABLE"
+    write(*,*) "DESIGNED FOR USE WITH 16 THREADS"
     write(*,*) " "
     write(*,*) "============================================================"
 
     ! Initialise OMP and delete current results.txt
 
     call OMP_SET_NUM_THREADS(nthreads)    
-    call file_check()
+
+    ! call getarg(1, desireddate)                                                       ! If parameterising by input date: get date of interest
 
     ! Load data sets
 
     write(*,*) "Loading data sets..."
 
-    open(unit=3, file="target_csv.csv")    ! Target OEs
+    open(unit=3, file="L2_endConds.csv")                                                 ! Target OEs
 
-    do i = 1,3046544
+    do i = 1,360000
 
-        read(3,*) targetData(i,1), targetData(i,2), targetData(i,3),t1,t2,t3,t4,t5
+        read(3,*) targetData(i,1), targetData(i,2), targetData(i,3), t1, t2, targetData(i,4), t3, t4
 
     end do
 
     close(3)
 
-    open(unit=20, file="Database_SPKs.csv")   ! Database file
+    open(unit=20, file="Database_SPKs.csv")                                             ! Database file
     
-    read(20,*) ! Read once to avoid 'spk_id' header
+    read(20,*)                                                                          ! Read once to avoid 'spk_id' header
 
     do i = 1,size(database)
-	    read(20,*) database(i)
+    
+        read(20,*) database(i)
+    
     end do
 
     close(20)
 
+    open(unit=99,file="successful_OEs.txt")
+
     ! Write progress message and begin timing
 
-    write(*,*) "Loading complete. Beginning compute sequence."
+    write(*,*) "Loading complete. Beginning compute sequence for body #", desireddate
+    
     start = omp_get_wtime()
 
     !$OMP PARALLEL DO PRIVATE(I,J,K, bodyid, bodystring, unitno, mindV, bodyData, a_b, e_b, inb, rp_t, e_t, in_t)
-    do i = 1, size(database)! All bodies
+    do i = 1, size(database) ! All bodies
+
+        ! Get the body ID from the database and write to a string
 
         bodyID = database(i)
-        write(bodystring, fmt) bodyID
+
+        ! Unique unit number for each thread
 
         unitno = OMP_GET_THREAD_NUM() + 30
+
+        ! Open file, read the input data and close again
 
         open(unit=unitno, file=trim(filepath)//trim(bodystring)//'_OE_corr.csv')
     
         do j = 1,1353
+
             read(unitno,*) date, bodyData(j,1), bodyData(j,2), bodyData(j,3), o, O, M, p
+
         end do
 
         close(unitno)
 
-        exitloop: do j = 272,1353
-        ! exitloop:  do j = 220,220
+        ! Loop at the desired data through every body, and every target, to see if we have any possible transfers
 
+        exitloop:  do j = 221,1353
 
-            a_b = bodyData(j,1)*au
+            a_b = bodyData(j,1)*au                                                                                  ! a is non-dim: convert to km
             e_b = bodyData(j,2)
-            inb = bodyData(j,3)
+            inb = bodyData(j,3)                                                                                     ! Note: degrees - is converted in cheapest subroutine
 
-            do k = 1,3046544
+            do k = 1, 360000
                 
-                rp_t = targetData(k,1)*au
-                e_t = targetData(k,2)
+                rp_t = targetData(k,1)*au                                                                           ! rp_t is non-dim: convert to km
+                e_t  = targetData(k,2)
                 in_t = targetData(k,3)
+                M_t  = targetData(k,4)
 
-                call cheapest(a_b, e_b, inb, rp_t, e_t, in_t, mindV)
+                call cheapest(a_b, e_b, inb, rp_t, e_t, in_t, M_t, mindV)                                           ! Compute if we have any possible transfers
 
                 if (mindV < .7) then 
 
-                    call file_add(bodyID, unitno, mindv)
+                    call file_add(bodyID, unitno, mindV, k)                                                         ! Open results file, add the SPK ID in, and close again
                     candidatecount = candidatecount + 1
-		            exit exitloop
+                    exit exitloop                                                                                   ! If we have a candidate, then we don't care about any other transfer opportunities; stop.
 
                 end if
 
@@ -151,44 +180,44 @@ program main
 
         itercount = itercount + 1
 
-        call system('clear')
-        write(*,*) "============================================================"
-        write(*,*) " "
-        write(*,*) "ASTEROID PRUNING PRE-FILTER: FORTRAN08 IMPLEMENTATION"
-        write(*,*) " "
-        write(*,*) "============================================================"
         write(*,*) "Completed processing object number ", itercount
         write(*,*) "Candidates found: ", candidatecount
 
     end do
     !$OMP END PARALLEL DO
 
-    call system('clear')
-    write(*,*) "============================================================"
-    write(*,*) " "
-    write(*,*) "ASTEROID PRUNING PRE-FILTER: FORTRAN08 IMPLEMENTATION"
-    write(*,*) " "
-    write(*,*) "============================================================"
-
     finish = omp_get_wtime()
 
     write(*,*) "==================== Scan completed ========================"
-    write(*,*) "Objects scanned: ", size(database)
+    write(*,*) "Objects scanned: ", itercount
     write(*,*) "Candidates found: ", candidatecount
     write(*,*) "Compute time: ", finish-start, "seconds."
+    close(99)
 
 end program main
 
+!
+! Routine to add the SPK ID of a body to a file if it is deemed to be a candidate
+! WARNING: May have issues if multiple threads attempt to I/O at once.
+!
 
-subroutine file_add(bodyID, unitnum, mindv)
+subroutine file_add(bodyID, unitnum, mindv, k)
 
     ! Subroutine intents
 
-    character(len=13) :: filepath ! Define address of file to be read
+    character(len=13)   :: filepath ! Define address of file to be read
+
     integer, intent(in) :: bodyID
     integer, intent(in) :: unitnum
-    real, intent(in) :: mindv
-    logical :: exist
+    integer, intent(in) :: k
+
+    real, intent(in)    :: mindv
+    
+    integer             :: outval1, outval2
+
+    logical             :: exist
+
+    ! call where_from(k, outstring)
 
     filepath = "results.txt"
 
@@ -204,16 +233,21 @@ subroutine file_add(bodyID, unitnum, mindv)
 
     end if
 
-    write(unitnum, *) bodyID, mindv
+    ! Write the body, the mindv, and the family (bounds)
+
+    write(unitnum, *) bodyID, mindv, outval1, outval2
     close(unitnum)
 
 end subroutine file_add
 
+!
+! Subroutine to check if the results file already exists in the working folder
+!
 
 subroutine file_check()
 
     character(len=13) :: filepath
-    logical :: exist
+    logical           :: exist
 
     filepath = 'results.txt'
 
@@ -229,285 +263,189 @@ subroutine file_check()
 end subroutine file_check
 
 
-subroutine cheaper(a_b, e_b, inb, rp_t, e_t, in_t, cheap)
+subroutine cheapest(a_b, e_b, inb, rp_t, e_t, in_t, M_t, cheap)
 
-    real, intent(in) :: a_b, e_b, inb, rp_t, e_t, in_t
-    real, intent(out) :: cheap
-    real :: mu_s, a_t, ra_t, rp_b, ra_b, a_int, in_b
-    real :: dV1, dV2, dV3, dV4, dV5, dV6, dV7, dV8
-    real :: dVi1, dVi2, dVi3, dVi4, dVi5, dVi6, dVi7, dVi8, dVi9, dVi10, dVi11, dVi12, dVi13, dVi14, dVi15, dVi16
-    real :: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16
-    double precision :: pi = 4.*datan(1.d0)
+    real, intent(in)    :: a_b                  ! SMA of the candidate (km)
+    real, intent(in)    :: e_b                  ! Eccentricity of the candidate
+    real, intent(in)    :: inb                  ! Inclination of the candiate (deg)
+    real, intent(in)    :: rp_t                 ! Radius of periapsis of the target (km)
+    real, intent(in)    :: e_t                  ! Eccentricity of the target
+    real, intent(in)    :: in_t                 ! Inclination of the target (rad)
+    real, intent(in)    :: M_t                  ! Mean anomaly of the target (rad)
 
-    mu_s = 1.327124400189e11
+    real, intent(out)   :: cheap                ! Cheapest Hohmann transfer (km/s)
 
-    in_b = inb*pi/180
+    real                :: mu_s                 ! Solar graviational parameter (km ^ 2/s ^ 3)
+    real                :: ra_b                 ! Radius of apoapsis of candidate (km)
+    real                :: rp_b                 ! Radius of periapsis of candidate (km)
+    real                :: ra_t                 ! Radius of apoaosis of target (km)
+    real                :: a_t                  ! SMA of target (km)
+    real                :: a_int                ! SMA of intermediate transfer arc (km)
+    real                :: a_f                  ! Equivalent SMA of target (doesn't really exist)
+    real                :: rstar                ! Quotient for inclination change calculation
+    real                :: dVi                  ! Velocity required for inclination change (km/s)
+    real                :: dV1                  ! Velocity required for first Hohmann maneouvre (km/s)
+    real                :: dV2                  ! Velocity required for second Hohmann maneouvre (km/s)
+    real                :: v1                   ! Total velocity required for first maneouvre (km/s)
+    real                :: v2                   ! Total velocity required for second maneouvre (km/s)
+    real                :: v3                   ! Total velocity required for first maneouvre (km/s)
+    real                :: v4                   ! Total velocity required for second maneouvre (km/s)
 
-    ra_b = a_b*(1+e_b)
-    rp_b = a_b*(1-e_b)
-
-    a_t = rp_t/(1-e_t) 
-    ra_t = a_t*(1+e_t) 
-
-    ! There are 16 cases of different transfer possibilities. 
-
-    !! Cases 1-4: target rp_t, perform periapsis changing apoapsis first
-
-    a_int = .5*(rp_b+rp_t) 
-
-    dV1 = sqrt(mu_s*(2/rp_b-1/a_int))-sqrt(mu_s*(2/rp_b-1/a_b)) 
-    dV2 = sqrt(mu_s*(2/rp_t-1/a_t)) - sqrt(mu_s*(2/rp_t-1/a_int)) 
-
-    dVi1 = 2*sqrt((mu_s/a_b)*(ra_b/rp_t))*sin(abs(in_b-in_t)/2) 
-
-    if (rp_t > rp_b) then
-
-        dVi2 = 2*sqrt((mu_s/a_int) * (rp_t/rp_b))*sin(abs(in_b-in_t)/2) 
-        dVi3 = 2*sqrt((mu_s/a_int) * (rp_b/rp_t))*sin(abs(in_b-in_t)/2) 
-	
-    else
-
-        dVi2 = 2*sqrt((mu_s/a_int)*(rp_b/rp_t))*sin(abs(in_b-in_t)/2) 
-        dVi3 = 2*sqrt((mu_s/a_int)*(rp_t/rp_b))*sin(abs(in_b-in_t)/2) 
-	
-    end if
-
-    dVi4 = 2*sqrt((mu_s/a_t)*(rp_b/ra_t))*sin(abs(in_b-in_t)/2) 
-
-    v1 = sqrt(dV1**2+dVi1**2) + sqrt(dV2**2) 
-    v2 = sqrt(dV1**2+dVi2**2) + sqrt(dV2**2) 
-    v3 = sqrt(dV1**2) + sqrt(dVi3**2+dV2**2) 
-    v4 = sqrt(dV1**2) + sqrt(dVi4**2 + dV2**2) 
-
-    !! Cases 5:8: target rp_t, perform apoapsis changing periapsis first
-
-    a_int = .5*(rp_t+ra_b) 
-
-    dV3 = sqrt(mu_s*(2/ra_b-1/a_int))-sqrt(mu_s*(2/ra_b-1/a_b)) 
-    dV4 = sqrt(mu_s*(2/rp_t-1/a_t))-sqrt(mu_s*(2/rp_t-1/a_int)) 
-
-    dVi5 = 2*sqrt(mu_s/a_b*(rp_b/ra_b))*sin(abs(in_b-in_t)/2) 
-
-    if (ra_b > rp_t) then
-
-        dVi6 = 2*sqrt((mu_s/a_int)*(rp_t/ra_b))*sin(abs(in_b-in_t)/2) 
-        dVi7 = 2*sqrt((mu_s/a_int)*(ra_b/rp_t))*sin(abs(in_b-in_t)/2) 
-
-    else
-        
-        dVi6 = 2*sqrt((mu_s/a_int)*(ra_b/rp_t))*sin(abs(in_b-in_t)/2) 
-        dVi7 = 2*sqrt((mu_s/a_int)*(rp_t/ra_b))*sin(abs(in_b-in_t)/2) 
-        
-    end if
-
-    dVi8 = 2*sqrt((mu_s/a_t)*ra_t/rp_t)*sin(abs(in_b-in_t)/2) 
-
-    v5 = sqrt(dVi5**2+dV3**2)+sqrt(dV4**2) 
-    v6 = sqrt(dV3**2+dVi6**2)+sqrt(dV4**2) 
-    v7 = sqrt(dV3**2) + sqrt(dV4**2+dVi7**2) 
-    v8 = sqrt(dV3**2) + sqrt(dV4**2+dVi8**2) 
-
-    !! Cases 9-12: target ra_t, perform periapsis changing apoapsis first
-
-    a_int = .5*(ra_t+rp_b) 
-
-    dV5 = sqrt(mu_s*(2/rp_b-1/a_int))-sqrt(mu_s*(2/rp_b-1/a_b)) 
-    dV6 = sqrt(mu_s*(2/ra_t-1/a_t)) - sqrt(mu_s*(2/ra_t-1/a_int)) 
-
-    dVi9 = 2*sqrt((mu_s/a_b)*(ra_b/rp_b))*sin(abs(in_b-in_t)/2) 
-
-    if (ra_t > rp_b) then
-
-        dVi10 = 2*sqrt((mu_s/a_int)*ra_t/rp_b)*sin(abs(in_b-in_t)/2) 
-        dVi11 = 2*sqrt((mu_s/a_int)*rp_b/ra_t)*sin(abs(in_b-in_t)/2) 
-        
-    else
-
-        dVi10 = 2*sqrt((mu_s/a_int)*rp_b/ra_t)*sin(abs(in_b-in_t)/2) 
-        dVi11 = 2*sqrt((mu_s/a_int)*ra_t/rp_b)*sin(abs(in_b-in_t)/2) 
-        
-    end if
-
-    dVi12 = 2*sqrt((mu_s/a_t)*(rp_t)/ra_t)*sin(abs(in_b-in_t)/2) 
-
-    v9 = sqrt(dVi9**2+dV5**2)+sqrt(dV6**2) 
-    v10 = sqrt(dV5**2+dVi10**2)+sqrt(dV6**2) 
-    v11 = sqrt(dV5**2) + sqrt(dV6**2+dVi11**2) 
-    v12 = sqrt(dV5**2) + sqrt(dV6**2+dVi12**2) 
-
-    !! Cases 13-16: target ra_t, perform ap changing peri first
-
-    a_int = .5*(ra_b+ra_t) 
-
-    dV7 = sqrt(mu_s*(2/ra_b-1/a_int))-sqrt(mu_s*(2/ra_b-1/a_b)) 
-    dV8 = sqrt(mu_s*(2/ra_t-1/a_t))-sqrt(mu_s*(2/ra_t-1/a_int)) 
-
-    dVi13 = 2*sqrt(mu_s/a_b*(rp_b/ra_b))*sin(abs(in_b-in_t)) 
-
-    if (ra_b > ra_t) then
-
-        dVi14 = 2*sqrt(mu_s/a_int*ra_t/ra_b)*sin(abs(in_b-in_t)) 
-        dVi15 = 2*sqrt(mu_s/a_int*ra_b/ra_t)*sin(abs(in_b-in_t)) 
-
-    else
-
-        dVi14 = 2*sqrt(mu_s/a_int*ra_b/ra_t)*sin(abs(in_b-in_t)) 
-        dVi15 = 2*sqrt(mu_s/a_int*ra_t/ra_b)*sin(abs(in_b-in_t)) 
-
-    end if
-
-    dVi16 = 2*sqrt(mu_s/a_int*(ra_t/rp_t))*sin(abs(in_b-in_t)) 
-
-    v13 = sqrt(dVi13**2+dV7**2)+sqrt(dV8**2) 
-    v14 = sqrt(dV7**2+dVi14**2)+sqrt(dV8**2) 
-    v15 = sqrt(dV7**2) + sqrt(dV8**2+dVi15**2) 
-    v16 = sqrt(dV7**2) + sqrt(dV8**2+dVi16**2) 
-
-    cheap = min(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16)
-
-end subroutine cheaper
-
-subroutine cheapest(a_b, e_b, inb, rp_t, e_t, in_t, cheap)
-
-    !
-    ! Computes the minimum transfer velocity between a target 
-    !
-
-    real, intent(in)    :: a_b, e_b, inb, rp_t, e_t, in_t
-    real, intent(out)   :: cheap
-    
-    real                :: mu_s, a_t, ra_t, rp_b, ra_b, a_int, in_b
-    real                :: dV1, dV2, dV3, dV4, dV5, dV6, dV7, dV8
-    real                :: dVi1, dVi2, dVi3, dVi4, dVi5, dVi6, dVi7, dVi8, dVi9, dVi10, dVi11, dVi12, dVi13, dVi14, dVi15, dVi16
-    real                :: v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16
-    
     double precision    :: pi = 4.*datan(1.d0)
 
     mu_s = 1.327124400189e11
 
-    in_b = inb*pi/180
+    ! Convert inb to radian
 
-    ra_b = a_b*(1+e_b)
-    rp_b = a_b*(1-e_b)
+    in_b = inb*pi/180.0
 
-    a_t = rp_t/(1-e_t) 
-    ra_t = a_t*(1+e_t) 
+    ! First, Compute apoapsis and periapsis distance for the body
+    
+    ra_b = a_b * (1 + e_b)
+    rp_b = a_b * (1 - e_b)
 
-    ! There are 16 cases of different transfer possibilities. 
+    a_t = rp_t / (1 - e_t)
+    ra_t = a_t * (1 + e_t)
 
-    !! Cases 1-4: target rp_t, perform periapsis changing apoapsis first
+    !
+    ! There are four possible cases of transfers:
+    !       1. Ap of body -> target apoapsis
+    !       2. Ap of body -> target periapsis
+    !       3. Peri of body -> target apoapsis
+    !       4. Peri of body -> target periapsis
+    !
+    ! We can, however, automatically eliminate two of these cases by simply choosing the most efficient point
+    ! to do the inclination change. This is at the point at which the velocity of the object is *lowest*
+    !
 
-    a_int = .5*(rp_b+rp_t) 
+    !
+    ! Case 1, ap -> ap
+    !
 
-    dV1 = sqrt(mu_s*(2/rp_b-1/a_int))-sqrt(mu_s*(2/rp_b-1/a_b)) 
-    dV2 = sqrt(mu_s*(2/rp_t-1/a_t)) - sqrt(mu_s*(2/rp_t-1/a_int)) 
+    ! First, compute the intermediate and final semimajor axes
 
-    dVi1 = 2*sqrt((mu_s/a_b)*(ra_b/rp_t))*sin(abs(in_b-in_t)/2) 
+    a_0 = a_b
+    a_int = (ra_b + ra_t) / 2.
+    a_f = a_t
 
-    if (rp_t > rp_b) then
+    ! Compute the velocity required to change the size of the apses
 
-        dVi2 = 2*sqrt((mu_s/a_int) * (rp_t/rp_b))*sin(abs(in_b-in_t)/2) 
-        dVi3 = 2*sqrt((mu_s/a_int) * (rp_b/rp_t))*sin(abs(in_b-in_t)/2) 
-	
-    else
+    dV1 = sqrt(mu_s * (2/ra_b - 1/a_int)) - sqrt(mu_s * (2/ra_b - 1/a_b))
+    dV2 = sqrt(mu_s * (2/ra_t - 1/a_f)) - sqrt(mu_s * (2/ra_t - 1/a_int))
 
-        dVi2 = 2*sqrt((mu_s/a_int)*(rp_b/rp_t))*sin(abs(in_b-in_t)/2) 
-        dVi3 = 2*sqrt((mu_s/a_int)*(rp_t/rp_b))*sin(abs(in_b-in_t)/2) 
-	
-    end if
+    !
+    ! Now the inclination change: only do it at the point where it is cheapest
+    !
 
-    dVi4 = 2*sqrt((mu_s/a_t)*(rp_b/ra_t))*sin(abs(in_b-in_t)/2) 
+    if (ra_t > ra_b) then  ! If ra_t is larger, then it's better to do the inclination change post-apside change
 
-    v1 = sqrt(dV1**2+dVi1**2) + sqrt(dV2**2) 
-    v2 = sqrt(dV1**2+dVi2**2) + sqrt(dV2**2) 
-    v3 = sqrt(dV1**2) + sqrt(dVi3**2+dV2**2) 
-    v4 = sqrt(dV1**2) + sqrt(dVi4**2 + dV2**2) 
-
-    !! Cases 5:8: target rp_t, perform apoapsis changing periapsis first
-
-    a_int = .5*(rp_t+ra_b) 
-
-    dV3 = sqrt(mu_s*(2/ra_b-1/a_int))-sqrt(mu_s*(2/ra_b-1/a_b)) 
-    dV4 = sqrt(mu_s*(2/rp_t-1/a_t))-sqrt(mu_s*(2/rp_t-1/a_int)) 
-
-    dVi5 = 2*sqrt(mu_s/a_b*(rp_b/ra_b))*sin(abs(in_b-in_t)/2) 
-
-    if (ra_b > rp_t) then
-
-        dVi6 = 2*sqrt((mu_s/a_int)*(rp_t/ra_b))*sin(abs(in_b-in_t)/2) 
-        dVi7 = 2*sqrt((mu_s/a_int)*(ra_b/rp_t))*sin(abs(in_b-in_t)/2) 
-
-    else
-        
-        dVi6 = 2*sqrt((mu_s/a_int)*(ra_b/rp_t))*sin(abs(in_b-in_t)/2) 
-        dVi7 = 2*sqrt((mu_s/a_int)*(rp_t/ra_b))*sin(abs(in_b-in_t)/2) 
-        
-    end if
-
-    dVi8 = 2*sqrt((mu_s/a_t)*ra_t/rp_t)*sin(abs(in_b-in_t)/2) 
-
-    v5 = sqrt(dVi5**2+dV3**2)+sqrt(dV4**2) 
-    v6 = sqrt(dV3**2+dVi6**2)+sqrt(dV4**2) 
-    v7 = sqrt(dV3**2) + sqrt(dV4**2+dVi7**2) 
-    v8 = sqrt(dV3**2) + sqrt(dV4**2+dVi8**2) 
-
-    !! Cases 9-12: target ra_t, perform periapsis changing apoapsis first
-
-    a_int = .5*(ra_t+rp_b) 
-
-    dV5 = sqrt(mu_s*(2/rp_b-1/a_int))-sqrt(mu_s*(2/rp_b-1/a_b)) 
-    dV6 = sqrt(mu_s*(2/ra_t-1/a_t)) - sqrt(mu_s*(2/ra_t-1/a_int)) 
-
-    dVi9 = 2*sqrt((mu_s/a_b)*(ra_b/rp_b))*sin(abs(in_b-in_t)/2) 
-
-    if (ra_t > rp_b) then
-
-        dVi10 = 2*sqrt((mu_s/a_int)*ra_t/rp_b)*sin(abs(in_b-in_t)/2) 
-        dVi11 = 2*sqrt((mu_s/a_int)*rp_b/ra_t)*sin(abs(in_b-in_t)/2) 
-        
-    else
-
-        dVi10 = 2*sqrt((mu_s/a_int)*rp_b/ra_t)*sin(abs(in_b-in_t)/2) 
-        dVi11 = 2*sqrt((mu_s/a_int)*ra_t/rp_b)*sin(abs(in_b-in_t)/2) 
-        
-    end if
-
-    dVi12 = 2*sqrt((mu_s/a_t)*(rp_t)/ra_t)*sin(abs(in_b-in_t)/2) 
-
-    v9 = sqrt(dVi9**2+dV5**2)+sqrt(dV6**2) 
-    v10 = sqrt(dV5**2+dVi10**2)+sqrt(dV6**2) 
-    v11 = sqrt(dV5**2) + sqrt(dV6**2+dVi11**2) 
-    v12 = sqrt(dV5**2) + sqrt(dV6**2+dVi12**2) 
-
-    !! Cases 13-16: target ra_t, perform ap changing peri first
-
-    a_int = .5*(ra_b+ra_t) 
-
-    dV7 = sqrt(mu_s*(2/ra_b-1/a_int))-sqrt(mu_s*(2/ra_b-1/a_b)) 
-    dV8 = sqrt(mu_s*(2/ra_t-1/a_t))-sqrt(mu_s*(2/ra_t-1/a_int)) 
-
-    dVi13 = 2*sqrt(mu_s/a_b*(rp_b/ra_b))*sin(abs(in_b-in_t)) 
-
-    if (ra_b > ra_t) then
-
-        dVi14 = 2*sqrt(mu_s/a_int*ra_t/ra_b)*sin(abs(in_b-in_t)) 
-        dVi15 = 2*sqrt(mu_s/a_int*ra_b/ra_t)*sin(abs(in_b-in_t)) 
+        rstar = ra_b / ra_t
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
+        v1 = abs(dV1) + sqrt(dVi ** 2 + dV2 ** 2)
 
     else
 
-        dVi14 = 2*sqrt(mu_s/a_int*ra_b/ra_t)*sin(abs(in_b-in_t)) 
-        dVi15 = 2*sqrt(mu_s/a_int*ra_t/ra_b)*sin(abs(in_b-in_t)) 
+        rstar = ra_t/ra_b
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
+        v1 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
 
     end if
 
-    dVi16 = 2*sqrt(mu_s/a_int*(ra_t/rp_t))*sin(abs(in_b-in_t)) 
+    !
+    ! Case 2, ap -> peri
+    !
 
-    v13 = sqrt(dVi13**2+dV7**2)+sqrt(dV8**2) 
-    v14 = sqrt(dV7**2+dVi14**2)+sqrt(dV8**2) 
-    v15 = sqrt(dV7**2) + sqrt(dV8**2+dVi15**2) 
-    v16 = sqrt(dV7**2) + sqrt(dV8**2+dVi16**2) 
+    ! Update the intermediate SMA
 
-    cheap = min(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16)
+    a_int = (ra_b + rp_t) / 2.
+
+    ! Compute the velocity required to change the size of the apses
+
+    dV1 = sqrt(mu_s * (2/ra_b - 1/a_int)) - sqrt(mu_s * (2/ra_b - 1/a_b))
+    dV2 = sqrt(mu_s * (2/rp_t - 1/a_f)) - sqrt(mu_s * (2/rp_t - 1/a_int))
+
+    !
+    ! Now the inclination change: only do it at the point where it is cheapest
+    !
+
+    if (rp_t > ra_b) then  ! If ra_b is larger, then it's better to do the inclination change post-apside change
+
+        rstar = ra_b / rp_t
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        v2 = abs(dV1) + sqrt(dV2 ** 2 + dVi **2)
+
+    else
+
+        rstar = rp_t/ra_b
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        v2 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
+
+    end if
+
+    !
+    ! Case 3, peri -> ap
+    !
+
+    ! First, compute the intermediate and final semimajor axes
+
+    a_0 = a_b
+    a_int = (rp_b + ra_t) / 2.
+    a_f = a_t
+
+    ! Compute the velocity required to change the size of the apses
+
+    dV1 = sqrt(mu_s * (2/rp_b - 1/a_int)) - sqrt(mu_s * (2/rp_b - 1/a_b))
+    dV2 = sqrt(mu_s * (2/ra_t - 1/a_f)) - sqrt(mu_s * (2/ra_t - 1/a_int))
+
+    !
+    ! Now the inclination change: only do it at the point where it is cheapest
+    !
+
+    if (ra_t > rp_b) then  ! If ra_t is larger, then it's better to do the inclination change post-apside change
+
+        rstar = rp_b / ra_t
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
+        v3 = abs(dV1) + sqrt(dV2 ** 2 + dVi ** 2)
+
+    else
+
+        rstar = ra_t/rp_b
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
+        v3 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
+
+    end if
+
+    !
+    ! Case 4, peri -> peri
+    !
+
+    ! Update the intermediate SMA
+
+    a_int = (rp_b + rp_t) / 2.
+
+    ! Compute the velocity required to change the size of the apses
+
+    dV1 = sqrt(mu_s * (2/rp_b - 1/a_int)) - sqrt(mu_s * (2/rp_b - 1/a_b))
+    dV2 = sqrt(mu_s * (2/rp_t - 1/a_f)) - sqrt(mu_s * (2/rp_t - 1/a_int))
+
+    !
+    ! Now the inclination change: only do it at the point where it is cheapest
+    !
+
+    if (rp_t > rp_b) then  ! If ra_b is larger, then it's better to do the inclination change post-apside change
+
+        rstar = rp_b / rp_t
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        v4 = abs(dV1) + sqrt(dV2 ** 2 + dVi ** 2)
+
+    else
+
+        rstar = rp_t / rp_b
+        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        v4 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
+
+    end if
+
+    cheap = min(v1, v2, v3, v4)
 
 end subroutine cheapest
-
