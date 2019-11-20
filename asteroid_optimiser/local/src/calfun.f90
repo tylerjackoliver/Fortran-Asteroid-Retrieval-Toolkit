@@ -98,19 +98,19 @@ SUBROUTINE CALFUN (N,X,F)
 
             if (run_ok .eqv. .false.) then
 
-            write(*,*) "Warning: Izzo's solver failed."
+                write(*,*) "Warning: Izzo's solver failed."
 
-            ! We will re-run the Lambert problem using Gooding's
-            ! algorithm, which is typically more robust (at the
-            ! expense of speed.)
+                ! We will re-run the Lambert problem using Gooding's
+                ! algorithm, which is typically more robust (at the
+                ! expense of speed.)
 
-            call solve_lambert_gooding(state_can(1:3),state_rot(1:3),tt,mu,long_way,multi_rev,v1,v2,run_ok)
+                call solve_lambert_gooding(state_can(1:3),state_rot(1:3),tt,mu,long_way,multi_rev,v1,v2,run_ok)
 
-            if (run_ok .eqv. .false.) then
+                if (run_ok .eqv. .false.) then
 
-                error stop "Lambert methods failed. Aborting..."
+                    error stop "Lambert methods failed. Aborting..."
 
-            end if
+                end if
 
             end if
 
@@ -120,23 +120,23 @@ SUBROUTINE CALFUN (N,X,F)
 
             do j = 1, num_rows
 
-            vx1 = v1(1,j)                                                                                                   ! x-velocity at start of Lambert arc
-            vy1 = v1(2,j)                                                                                                   ! y-velocity at start of Lambert arc
-            vz1 = v1(3,j)                                                                                                   ! z-velocity at start of Lambert arc
+                vx1 = v1(1,j)                                                                                                   ! x-velocity at start of Lambert arc
+                vy1 = v1(2,j)                                                                                                   ! y-velocity at start of Lambert arc
+                vz1 = v1(3,j)                                                                                                   ! z-velocity at start of Lambert arc
 
-            vx2 = v2(1,j)                                                                                                   ! x-velocity at end of Lambert arc
-            vy2 = v2(2,j)                                                                                                   ! y-velocity at end of Lambert arc
-            vz2 = v2(3,j)                                                                                                   ! z-velocity at end of Lambert arc
+                vx2 = v2(1,j)                                                                                                   ! x-velocity at end of Lambert arc
+                vy2 = v2(2,j)                                                                                                   ! y-velocity at end of Lambert arc
+                vz2 = v2(3,j)                                                                                                   ! z-velocity at end of Lambert arc
 
-            transfer_v1  = ((vx1-vcx)**2.d0+(vy1-vcy)**2.d0+(vz1-vcz)**2.d0)**.5d0                                                     ! deltaV from the candidate and the beginning of the lambert arc
-            transfer_v2  = ((vx2-vtx)**2.d0+(vy2-vty)**2.d0+(vz2-vtz)**2.d0)**.5d0                                                     ! deltaV from the target and the end of the lambert arc
-            transfer_vel = transfer_v1 + transfer_v2                                                                        ! Total delta v is the sum of both; both > 0
+                transfer_v1  = ((vx1-vcx)**2.d0+(vy1-vcy)**2.d0+(vz1-vcz)**2.d0)**.5d0                                          ! deltaV from the candidate and the beginning of the lambert arc
+                transfer_v2  = ((vx2-vtx)**2.d0+(vy2-vty)**2.d0+(vz2-vtz)**2.d0)**.5d0                                          ! deltaV from the target and the end of the lambert arc
+                transfer_vel = transfer_v1 + transfer_v2                                                                        ! Total delta v is the sum of both; both > 0
 
-            if (transfer_vel < min_vel) then
+                if (transfer_vel < min_vel) then
 
-                min_vel = transfer_vel
-                
-            end if
+                    min_vel = transfer_vel
+                    
+                end if
 
             end do
 
@@ -150,20 +150,20 @@ SUBROUTINE CALFUN (N,X,F)
 
             if (run_ok .eqv. .false.) then
 
-            write(*,*) "Warning: Izzo's solver failed."
+                write(*,*) "Warning: Izzo's solver failed."
 
-            ! We will re-run the Lambert problem using Gooding's
-            ! algorithm, which is typically more robust (at the
-            ! expense of speed.)
+                ! We will re-run the Lambert problem using Gooding's
+                ! algorithm, which is typically more robust (at the
+                ! expense of speed.)
 
-            call solve_lambert_gooding(state_can(1:3),state_rot(1:3),tt,mu,long_way,multi_rev,v1,v2,&
-                run_ok)
+                call solve_lambert_gooding(state_can(1:3),state_rot(1:3),tt,mu,long_way,multi_rev,v1,v2,&
+                    run_ok)
 
-            if (run_ok .eqv. .false.) then
+                if (run_ok .eqv. .false.) then
 
-                error stop "Lambert methods failed. Aborting..."
+                    error stop "Lambert methods failed. Aborting..."
 
-            end if
+                end if
 
             end if
 
@@ -173,23 +173,23 @@ SUBROUTINE CALFUN (N,X,F)
 
             do j = 1, num_rows
 
-            vx1 = v1(1,j)                                                                                                   ! x-velocity at start of Lambert arc
-            vy1 = v1(2,j)                                                                                                   ! y-velocity at start of Lambert arc
-            vz1 = v1(3,j)                                                                                                   ! z-velocity at start of Lambert arc
+                vx1 = v1(1,j)                                                                                                   ! x-velocity at start of Lambert arc
+                vy1 = v1(2,j)                                                                                                   ! y-velocity at start of Lambert arc
+                vz1 = v1(3,j)                                                                                                   ! z-velocity at start of Lambert arc
 
-            vx2 = v2(1,j)                                                                                                   ! x-velocity at end of Lambert arc
-            vy2 = v2(2,j)                                                                                                   ! y-velocity at end of Lambert arc
-            vz2 = v2(3,j)                                                                                                   ! z-velocity at end of Lambert arc
+                vx2 = v2(1,j)                                                                                                   ! x-velocity at end of Lambert arc
+                vy2 = v2(2,j)                                                                                                   ! y-velocity at end of Lambert arc
+                vz2 = v2(3,j)                                                                                                   ! z-velocity at end of Lambert arc
 
-            transfer_v1  = ((vx1-vcx)**2.d0+(vy1-vcy)**2.d0+(vz1-vcz)**2.d0)**.5d0                                                     ! deltaV from the candidate and the beginning of the lambert arc
-            transfer_v2  = ((vx2-vtx)**2.d0+(vy2-vty)**2.d0+(vz2-vtz)**2.d0)**.5d0                                                      ! deltaV from the target and the end of the lambert arc
-            transfer_vel = transfer_v1 + transfer_v2                                                                        ! Total delta v is the sum of both; both > 0
+                transfer_v1  = ((vx1-vcx)**2.d0+(vy1-vcy)**2.d0+(vz1-vcz)**2.d0)**.5d0                                                     ! deltaV from the candidate and the beginning of the lambert arc
+                transfer_v2  = ((vx2-vtx)**2.d0+(vy2-vty)**2.d0+(vz2-vtz)**2.d0)**.5d0                                                      ! deltaV from the target and the end of the lambert arc
+                transfer_vel = transfer_v1 + transfer_v2                                                                        ! Total delta v is the sum of both; both > 0
 
-            if (transfer_vel < min_vel) then
+                if (transfer_vel < min_vel) then
 
-                min_vel  = transfer_vel
+                    min_vel  = transfer_vel
 
-            end if
+                end if
 
         end do
 

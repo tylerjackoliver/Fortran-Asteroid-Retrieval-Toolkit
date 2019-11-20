@@ -83,8 +83,6 @@ function [XS_in, XS_out, Y] = ...
 
         % Perturb conditions
         
-%         XS_in(:, ii) = y + sign(y(4) + S(4)*10e-6) * S .* pert;
-%         XS_in(:, ii) = y + [1e-06; 0; 0; 0; 0; 0] .* S;
         XS_in(:, ii) = y  + S.*pert;
         XS_out(:,ii) = y - S .* pert; 
 
