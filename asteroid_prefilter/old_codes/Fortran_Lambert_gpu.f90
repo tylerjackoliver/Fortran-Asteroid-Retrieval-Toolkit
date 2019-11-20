@@ -1,10 +1,7 @@
 ! This program implements the Lambert transfer methodology, originally
 ! written in MATLAB, for Fortran routines. 
 !
-! This progam is to form one of the main routines for the topimisation
-! process in Fortran, and as such a quick performance is paramount.
-! Thus, this code will be translated into a parallel implementation at
-! some point in the near future.
+! This version implements a basic GPU parallelisation.
 !
 ! This program has the following dependencies:
 !

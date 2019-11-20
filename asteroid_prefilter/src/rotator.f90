@@ -1,4 +1,15 @@
-        program main
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!
+!     ROTATOR
+!
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!
+! The following code takes states in the synodic frame
+! and converts them into the global frame.
+!
+
+
+program main
 
             use precision_kinds
             use constants

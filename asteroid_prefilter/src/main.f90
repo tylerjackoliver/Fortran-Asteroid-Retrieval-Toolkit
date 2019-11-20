@@ -454,7 +454,6 @@
                 end do read_loop
                 !$OMP END PARALLEL DO
 
-                write(66, *) t, tt, min_vel
                 time_finish = omp_get_wtime()
 
                 write(*,*) "timings: ", time_finish-time_start, "s"

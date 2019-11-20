@@ -26,13 +26,10 @@ ENDIF()
 add_executable (ast_optim
 
                 # Main project file
-                #                src/jiggler.f90
-                src/Fortran_Lambert_3435539_contiguous.f90
-                src/state_finder_imp_jiggle.f90
+                src/jiggler.f90
+                src/state_determination.f90
                 src/precision.f90
                 src/constants.f90
-
-                #src/tester.f90
 
 )
 
