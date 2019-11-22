@@ -36,7 +36,7 @@ function [out1, out2, out3] = threeBodyEOM(~, x, flag)
 
             case 'events'
 
-                    value = atan2(x(2),x(1)) - pi/8;
+                    value = atan2(x(2),x(1));
                     isterminal = 1;
                     direction = 0;
 

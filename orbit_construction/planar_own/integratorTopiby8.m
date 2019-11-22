@@ -1,12 +1,12 @@
-planeConds = zeros(length(perturbedConds), 6);
+planeConds = zeros(length(planeCondsPruned*100), 6);
 
-OPTIONS_events = odeset('RelTol', 1e-012, 'AbsTol', 1e-012, 'Events', 'on');
+OPTIONS_events = odeset('RelTol', 1e-013, 'AbsTol', 1e-013, 'Events', 'on');
 
-for i = 1:length(perturbedConds)
+for i = 1:length(planeCondsPruned)
     
-    [t, x] = ode45('threeBodyEOM', [0 -100], perturbedConds(:,i)', OPTIONS_events);
+    [t, x] = ode45('threeBodyEOM', [0 -100], planeCondsPruned(:,i)', OPTIONS_events);
     
-    planeConds(i, :) = x(end, :);
+    planeConds(i, :) = x(end, 1:length100:end);
     
     fprintf("Completed state %d\n", i);
     

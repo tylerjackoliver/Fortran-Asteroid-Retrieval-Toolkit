@@ -90,11 +90,9 @@ END
 
         min_vel = 1.d6
 
-        print *, "calling with", transfer_epoch, tt
-
         ! Open input file
 
-        open(69, file='../data/optim_3435539.dat')
+        open(69, file='../data/2019-11-20_L2PlanarBackCondsSynodic.csv')
 
         ! Compute the candidate position
 

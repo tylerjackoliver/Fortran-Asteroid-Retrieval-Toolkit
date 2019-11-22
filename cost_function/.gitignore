@@ -5,3 +5,4 @@ data/corrected_oe/
 *.csv
 *.bsp
 data/
+bin/

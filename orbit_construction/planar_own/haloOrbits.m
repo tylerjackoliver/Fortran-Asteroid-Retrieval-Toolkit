@@ -5,6 +5,9 @@
 mu = 3.003458e-06;                                                          % Mass parameter
 dOPTIONS = odeset('RelTol', 1e-013, 'AbsTol', 1e-013);                      % Default integrator options
                                                                             % the two extremes                                            % Initialise output arrays (360 points per orbit * 1000 orbits)
+
+%% Store results arrays                                                                            
+                                                                            
 initConds = zeros(6, 1000);
 perturbedConds = zeros(6, 360*1000);
 unperturbedConds = zeros(6, 1000);
@@ -21,48 +24,24 @@ ax1 = 3.e-02 * (mu/3) ^ (1/3);
 
 l_point = 2;
 
-[x0, ~] = poGuessLinear3BP(mu, l_point, ax1) ;
+[x0, ~] = poGuessLinear3BP(mu, l_point, ax1);
 
-x0step = (1.008862481953990-1.000781824419455)/1000;                        % Analytical: want 1000 points
-
-% x0 = [x0(1); x0(2); 0; x0(3); x0(4); 0];
-
-x0 = [1.008862481953990;0;0;0.007057768041862];                           % Start of range for L2
-
-% at count = 1000
-
-% x0 = [1.003705712627548;0;0;0.036301264986230];
-
-% Final
-
-%  x0 = [1.000781824419455;0;0;0;0.088289221005432;0];
-
-% At 732
-
-x0 = [1.002947440638782;0;0;0.042646589022488];
+x0Step = 8.49e-06; % Should give us exactly 1000 orbits!
 
 while cnt < 1000                                                            % Existing functonality; continue orbit 1000 times
 
-% 	[x, tf, success] = differentialCorrector(x0, mu);                       % Differential correct the guess to ensure closure
-
     [x, tf] = poDifCor3BP(x0, mu);
-   
-%     if (not(success))
-%         
-%         error("Differential correction failed.");
-%         
-%     end
     
     % Move from planar problem to full problem
     
     x = [x(1); x(2); 0; x(3); x(4); 0];
     
     jacobiConst = jacobiConstant(x, 1, mu);
-    fprintf("%12.10f\n", jacobiConst)
+    fprintf("Jacobi constant: %12.10f\n", jacobiConst);
     
     % If we're in the zone of interest, then save what we have
     
-    if (jacobiConst <= 3.00085 && jacobiConst >= 2.99985)
+    if (jacobiConst <= 3.00087 && jacobiConst >= 2.9998493683)
         
         initConds(:, cnt) = x;                                                    % Store the initial conditions and time for this orbit
         initTime(:, cnt) = tf;
@@ -90,7 +69,7 @@ while cnt < 1000                                                            % Ex
         
     end
 
-    x0 = [x(1)-x0step; x(2); x(4:5)];
+    x0 = [x(1)-x0Step; x(2); x(4:5)];
    
 end
     

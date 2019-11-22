@@ -26,8 +26,8 @@ program main
             INTEGER(kind=sp)        :: unitno = 50
             INTEGER(kind=sp)        :: outunit= 51
 
-            CHARACTER(len=21)       :: infile = 'output_data_mod.dat'
-            CHARACTER(len=21)       :: output = 'output_data_fin.dat'
+            CHARACTER(len=50)       :: infile = '2019-11-20_L2PlanarPlaneCondsSynodic.csv'
+            CHARACTER(len=50)       :: output = '2019-11-20_L2PlanarPlaneElementsGlobal.csv'
 
             ! Open file
 
@@ -68,7 +68,7 @@ program main
 
                 i = i+1
 
-                read(unitno,*,iostat=io_state) dum, state(1), state(2),&
+                read(unitno,*,iostat=io_state) state(1), state(2),&
                     state(3), state(4), state(5), state(6)
 
                 if (io_state /= 0) then

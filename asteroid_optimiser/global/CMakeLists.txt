@@ -8,9 +8,9 @@ project (ast_optim)
 include_directories(${CMAKE_BINARY_DIR}/../mod/)
 link_directories(${CMAKE_BINARY_DIR}/../lib/)
 
-set (CMAKE_fortran_COMPILER "/usr/local/gfortran-8")
-set (CMAKE_C_COMPILER "/usr/local/gcc-8")
-set (CMAKE_CXX_COMPILER "/usr/local/g++-8")
+set (CMAKE_fortran_COMPILER "gfortran")
+set (CMAKE_C_COMPILER "gcc")
+set (CMAKE_CXX_COMPILER "g++")
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 OPTION (USE_OpenMP "Use OpenMP" ON)
