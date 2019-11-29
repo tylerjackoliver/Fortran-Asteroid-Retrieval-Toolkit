@@ -17,7 +17,7 @@ Configured with: ../src/configure -v --with-pkgversion='Ubuntu 7.4.0-1ubuntu1~18
 Thread model: posix
 gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
 COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/7/f951 CMakeFortranCompilerId.F -ffixed-form -cpp=/tmp/ccXu8yaL.f90 -quiet -v -imultiarch x86_64-linux-gnu CMakeFortranCompilerId.F -quiet -dumpbase CMakeFortranCompilerId.F -mtune=generic -march=x86-64 -auxbase CMakeFortranCompilerId -version -fintrinsic-modules-path /usr/lib/gcc/x86_64-linux-gnu/7/finclude -o /tmp/ccpxjnN5.s
+ /usr/lib/gcc/x86_64-linux-gnu/7/f951 CMakeFortranCompilerId.F -ffixed-form -cpp=/tmp/ccBdmYy1.f90 -quiet -v -imultiarch x86_64-linux-gnu CMakeFortranCompilerId.F -quiet -dumpbase CMakeFortranCompilerId.F -mtune=generic -march=x86-64 -auxbase CMakeFortranCompilerId -version -fintrinsic-modules-path /usr/lib/gcc/x86_64-linux-gnu/7/finclude -o /tmp/cczQpAUz.s
 GNU Fortran (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
 	compiled by GNU C version 7.4.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
 
@@ -38,7 +38,7 @@ GNU Fortran2008 (Ubuntu 7.4.0-1ubuntu1~18.04.1) version 7.4.0 (x86_64-linux-gnu)
 
 GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
 COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- as -v --64 -o /tmp/ccFe7Jsq.o /tmp/ccpxjnN5.s
+ as -v --64 -o /tmp/ccSd0tk8.o /tmp/cczQpAUz.s
 GNU assembler version 2.30 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.30
 Reading specs from /usr/lib/gcc/x86_64-linux-gnu/7/libgfortran.spec
 rename spec lib to liborig
@@ -46,7 +46,7 @@ COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
 COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccfvvM8K.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. /tmp/ccFe7Jsq.o -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
+ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccnnJqLG.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. /tmp/ccSd0tk8.o -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
 COLLECT_GCC_OPTIONS='-v' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 
 
@@ -57,29 +57,29 @@ The Fortran compiler identification is GNU, found in "/home/jack/Documents/aster
 Determining if the Fortran compiler works passed with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_2aded/fast"
-/usr/bin/make -f CMakeFiles/cmTC_2aded.dir/build.make CMakeFiles/cmTC_2aded.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_797d9/fast"
+/usr/bin/make -f CMakeFiles/cmTC_797d9.dir/build.make CMakeFiles/cmTC_797d9.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building Fortran object CMakeFiles/cmTC_2aded.dir/testFortranCompiler.f.o
-/usr/bin/gfortran    -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testFortranCompiler.f -o CMakeFiles/cmTC_2aded.dir/testFortranCompiler.f.o
-Linking Fortran executable cmTC_2aded
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2aded.dir/link.txt --verbose=1
-/usr/bin/gfortran      CMakeFiles/cmTC_2aded.dir/testFortranCompiler.f.o  -o cmTC_2aded 
+Building Fortran object CMakeFiles/cmTC_797d9.dir/testFortranCompiler.f.o
+/usr/bin/gfortran    -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testFortranCompiler.f -o CMakeFiles/cmTC_797d9.dir/testFortranCompiler.f.o
+Linking Fortran executable cmTC_797d9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_797d9.dir/link.txt --verbose=1
+/usr/bin/gfortran      CMakeFiles/cmTC_797d9.dir/testFortranCompiler.f.o  -o cmTC_797d9 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
 Detecting Fortran compiler ABI info compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_20fd5/fast"
-/usr/bin/make -f CMakeFiles/cmTC_20fd5.dir/build.make CMakeFiles/cmTC_20fd5.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_c3786/fast"
+/usr/bin/make -f CMakeFiles/cmTC_c3786.dir/build.make CMakeFiles/cmTC_c3786.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building Fortran object CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o
-/usr/bin/gfortran    -c /usr/share/cmake-3.10/Modules/CMakeFortranCompilerABI.F -o CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o
-Linking Fortran executable cmTC_20fd5
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_20fd5.dir/link.txt --verbose=1
-/usr/bin/gfortran   -v   CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o  -o cmTC_20fd5 
-Driving: /usr/bin/gfortran -v CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o -o cmTC_20fd5 -l gfortran -l m -shared-libgcc
+Building Fortran object CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o
+/usr/bin/gfortran    -c /usr/share/cmake-3.10/Modules/CMakeFortranCompilerABI.F -o CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o
+Linking Fortran executable cmTC_c3786
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c3786.dir/link.txt --verbose=1
+/usr/bin/gfortran   -v   CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o  -o cmTC_c3786 
+Driving: /usr/bin/gfortran -v CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o -o cmTC_c3786 -l gfortran -l m -shared-libgcc
 Using built-in specs.
 COLLECT_GCC=/usr/bin/gfortran
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper
@@ -91,12 +91,12 @@ Thread model: posix
 gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
 Reading specs from /usr/lib/gcc/x86_64-linux-gnu/7/libgfortran.spec
 rename spec lib to liborig
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_20fd5' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_c3786' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_20fd5' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc2O4sQS.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_20fd5 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_20fd5' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_c3786' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccQfGE2h.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_c3786 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_c3786' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -104,15 +104,15 @@ Parsed Fortran implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_20fd5/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_20fd5.dir/build.make CMakeFiles/cmTC_20fd5.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_c3786/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_c3786.dir/build.make CMakeFiles/cmTC_c3786.dir/build]
   ignore line: [make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building Fortran object CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o]
-  ignore line: [/usr/bin/gfortran    -c /usr/share/cmake-3.10/Modules/CMakeFortranCompilerABI.F -o CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o]
-  ignore line: [Linking Fortran executable cmTC_20fd5]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_20fd5.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/gfortran   -v   CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o  -o cmTC_20fd5 ]
-  ignore line: [Driving: /usr/bin/gfortran -v CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o -o cmTC_20fd5 -l gfortran -l m -shared-libgcc]
+  ignore line: [Building Fortran object CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o]
+  ignore line: [/usr/bin/gfortran    -c /usr/share/cmake-3.10/Modules/CMakeFortranCompilerABI.F -o CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o]
+  ignore line: [Linking Fortran executable cmTC_c3786]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c3786.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/gfortran   -v   CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o  -o cmTC_c3786 ]
+  ignore line: [Driving: /usr/bin/gfortran -v CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o -o cmTC_c3786 -l gfortran -l m -shared-libgcc]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/gfortran]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper]
@@ -124,16 +124,16 @@ Parsed Fortran implicit link information from above output:
   ignore line: [gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) ]
   ignore line: [Reading specs from /usr/lib/gcc/x86_64-linux-gnu/7/libgfortran.spec]
   ignore line: [rename spec lib to liborig]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_20fd5' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_c3786' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_20fd5' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc2O4sQS.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_20fd5 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_c3786' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccQfGE2h.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lquadmath -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_c3786 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o -lgfortran -lm -lgcc_s -lgcc -lquadmath -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/cc2O4sQS.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccQfGE2h.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lquadmath] ==> ignore
@@ -156,7 +156,7 @@ Parsed Fortran implicit link information from above output:
     arg [-znow] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_20fd5] ==> ignore
+    arg [cmTC_c3786] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o] ==> ignore
@@ -168,7 +168,7 @@ Parsed Fortran implicit link information from above output:
     arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../..]
-    arg [CMakeFiles/cmTC_20fd5.dir/CMakeFortranCompilerABI.F.o] ==> ignore
+    arg [CMakeFiles/cmTC_c3786.dir/CMakeFortranCompilerABI.F.o] ==> ignore
     arg [-lgfortran] ==> lib [gfortran]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -198,14 +198,14 @@ Parsed Fortran implicit link information from above output:
 Determining if the Fortran compiler supports Fortran 90 passed with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_be733/fast"
-/usr/bin/make -f CMakeFiles/cmTC_be733.dir/build.make CMakeFiles/cmTC_be733.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_74db8/fast"
+/usr/bin/make -f CMakeFiles/cmTC_74db8.dir/build.make CMakeFiles/cmTC_74db8.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building Fortran object CMakeFiles/cmTC_be733.dir/testFortranCompilerF90.f90.o
-/usr/bin/gfortran    -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testFortranCompilerF90.f90 -o CMakeFiles/cmTC_be733.dir/testFortranCompilerF90.f90.o
-Linking Fortran executable cmTC_be733
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_be733.dir/link.txt --verbose=1
-/usr/bin/gfortran      CMakeFiles/cmTC_be733.dir/testFortranCompilerF90.f90.o  -o cmTC_be733 
+Building Fortran object CMakeFiles/cmTC_74db8.dir/testFortranCompilerF90.f90.o
+/usr/bin/gfortran    -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testFortranCompilerF90.f90 -o CMakeFiles/cmTC_74db8.dir/testFortranCompilerF90.f90.o
+Linking Fortran executable cmTC_74db8
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_74db8.dir/link.txt --verbose=1
+/usr/bin/gfortran      CMakeFiles/cmTC_74db8.dir/testFortranCompilerF90.f90.o  -o cmTC_74db8 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -238,28 +238,28 @@ The CXX compiler identification is GNU, found in "/home/jack/Documents/asteroid_
 Determining if the C compiler works passed with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_4ff8f/fast"
-/usr/bin/make -f CMakeFiles/cmTC_4ff8f.dir/build.make CMakeFiles/cmTC_4ff8f.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_7195e/fast"
+/usr/bin/make -f CMakeFiles/cmTC_7195e.dir/build.make CMakeFiles/cmTC_7195e.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_4ff8f.dir/testCCompiler.c.o
-/usr/bin/cc    -o CMakeFiles/cmTC_4ff8f.dir/testCCompiler.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testCCompiler.c
-Linking C executable cmTC_4ff8f
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4ff8f.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_4ff8f.dir/testCCompiler.c.o  -o cmTC_4ff8f 
+Building C object CMakeFiles/cmTC_7195e.dir/testCCompiler.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_7195e.dir/testCCompiler.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_7195e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7195e.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_7195e.dir/testCCompiler.c.o  -o cmTC_7195e 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_7926d/fast"
-/usr/bin/make -f CMakeFiles/cmTC_7926d.dir/build.make CMakeFiles/cmTC_7926d.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_aec4d/fast"
+/usr/bin/make -f CMakeFiles/cmTC_aec4d.dir/build.make CMakeFiles/cmTC_aec4d.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o
-/usr/bin/cc    -o CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
-Linking C executable cmTC_7926d
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7926d.dir/link.txt --verbose=1
-/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o  -o cmTC_7926d 
+Building C object CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_aec4d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_aec4d.dir/link.txt --verbose=1
+/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o  -o cmTC_aec4d 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/cc
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper
@@ -271,9 +271,9 @@ Thread model: posix
 gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
 COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_7926d' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc7cbfQa.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_7926d /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_7926d' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_aec4d' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccXuRNLz.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_aec4d /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_aec4d' '-mtune=generic' '-march=x86-64'
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -281,14 +281,14 @@ Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_7926d/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_7926d.dir/build.make CMakeFiles/cmTC_7926d.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_aec4d/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_aec4d.dir/build.make CMakeFiles/cmTC_aec4d.dir/build]
   ignore line: [make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building C object CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o]
-  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
-  ignore line: [Linking C executable cmTC_7926d]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7926d.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o  -o cmTC_7926d ]
+  ignore line: [Building C object CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_aec4d]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_aec4d.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o  -o cmTC_aec4d ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/cc]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper]
@@ -300,13 +300,13 @@ Parsed C implicit link information from above output:
   ignore line: [gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_7926d' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc7cbfQa.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_7926d /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_aec4d' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccXuRNLz.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_aec4d /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/cc7cbfQa.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccXuRNLz.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -326,7 +326,7 @@ Parsed C implicit link information from above output:
     arg [-znow] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_7926d] ==> ignore
+    arg [cmTC_aec4d] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o] ==> ignore
@@ -338,7 +338,7 @@ Parsed C implicit link information from above output:
     arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../..]
-    arg [CMakeFiles/cmTC_7926d.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_aec4d.dir/CMakeCCompilerABI.c.o] ==> ignore
     arg [-lgcc] ==> lib [gcc]
     arg [--push-state] ==> ignore
     arg [--as-needed] ==> ignore
@@ -370,14 +370,14 @@ Parsed C implicit link information from above output:
 Detecting C [-std=c11] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_fcc19/fast"
-/usr/bin/make -f CMakeFiles/cmTC_fcc19.dir/build.make CMakeFiles/cmTC_fcc19.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_ac974/fast"
+/usr/bin/make -f CMakeFiles/cmTC_ac974.dir/build.make CMakeFiles/cmTC_ac974.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_fcc19.dir/feature_tests.c.o
-/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_fcc19.dir/feature_tests.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_fcc19
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fcc19.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_fcc19.dir/feature_tests.c.o  -o cmTC_fcc19 
+Building C object CMakeFiles/cmTC_ac974.dir/feature_tests.c.o
+/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_ac974.dir/feature_tests.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_ac974
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ac974.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_ac974.dir/feature_tests.c.o  -o cmTC_ac974 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -390,14 +390,14 @@ make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_functio
 Detecting C [-std=c99] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_67e0d/fast"
-/usr/bin/make -f CMakeFiles/cmTC_67e0d.dir/build.make CMakeFiles/cmTC_67e0d.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_8bf2c/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8bf2c.dir/build.make CMakeFiles/cmTC_8bf2c.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_67e0d.dir/feature_tests.c.o
-/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_67e0d.dir/feature_tests.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_67e0d
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_67e0d.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_67e0d.dir/feature_tests.c.o  -o cmTC_67e0d 
+Building C object CMakeFiles/cmTC_8bf2c.dir/feature_tests.c.o
+/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_8bf2c.dir/feature_tests.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_8bf2c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8bf2c.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_8bf2c.dir/feature_tests.c.o  -o cmTC_8bf2c 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -410,14 +410,14 @@ make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_functio
 Detecting C [-std=c90] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_f6233/fast"
-/usr/bin/make -f CMakeFiles/cmTC_f6233.dir/build.make CMakeFiles/cmTC_f6233.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_09d17/fast"
+/usr/bin/make -f CMakeFiles/cmTC_09d17.dir/build.make CMakeFiles/cmTC_09d17.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_f6233.dir/feature_tests.c.o
-/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_f6233.dir/feature_tests.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_f6233
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f6233.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_f6233.dir/feature_tests.c.o  -o cmTC_f6233 
+Building C object CMakeFiles/cmTC_09d17.dir/feature_tests.c.o
+/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_09d17.dir/feature_tests.c.o   -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_09d17
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_09d17.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_09d17.dir/feature_tests.c.o  -o cmTC_09d17 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -428,28 +428,28 @@ make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_functio
 Determining if the CXX compiler works passed with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_d8586/fast"
-/usr/bin/make -f CMakeFiles/cmTC_d8586.dir/build.make CMakeFiles/cmTC_d8586.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_1cbf7/fast"
+/usr/bin/make -f CMakeFiles/cmTC_1cbf7.dir/build.make CMakeFiles/cmTC_1cbf7.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_d8586.dir/testCXXCompiler.cxx.o
-/usr/bin/c++     -o CMakeFiles/cmTC_d8586.dir/testCXXCompiler.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
-Linking CXX executable cmTC_d8586
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d8586.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_d8586.dir/testCXXCompiler.cxx.o  -o cmTC_d8586 
+Building CXX object CMakeFiles/cmTC_1cbf7.dir/testCXXCompiler.cxx.o
+/usr/bin/c++     -o CMakeFiles/cmTC_1cbf7.dir/testCXXCompiler.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_1cbf7
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1cbf7.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_1cbf7.dir/testCXXCompiler.cxx.o  -o cmTC_1cbf7 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_df3ea/fast"
-/usr/bin/make -f CMakeFiles/cmTC_df3ea.dir/build.make CMakeFiles/cmTC_df3ea.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_30b45/fast"
+/usr/bin/make -f CMakeFiles/cmTC_30b45.dir/build.make CMakeFiles/cmTC_30b45.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o
-/usr/bin/c++     -o CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
-Linking CXX executable cmTC_df3ea
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_df3ea.dir/link.txt --verbose=1
-/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_df3ea 
+Building CXX object CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/c++     -o CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_30b45
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_30b45.dir/link.txt --verbose=1
+/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_30b45 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/c++
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper
@@ -461,9 +461,9 @@ Thread model: posix
 gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) 
 COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_df3ea' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc1EIGwv.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_df3ea /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_df3ea' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_30b45' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccIzNgqU.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_30b45 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_30b45' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -471,14 +471,14 @@ Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_df3ea/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_df3ea.dir/build.make CMakeFiles/cmTC_df3ea.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_30b45/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_30b45.dir/build.make CMakeFiles/cmTC_30b45.dir/build]
   ignore line: [make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building CXX object CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [Linking CXX executable cmTC_df3ea]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_df3ea.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_df3ea ]
+  ignore line: [Building CXX object CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_30b45]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_30b45.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_30b45 ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/c++]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper]
@@ -490,13 +490,13 @@ Parsed CXX implicit link information from above output:
   ignore line: [gcc version 7.4.0 (Ubuntu 7.4.0-1ubuntu1~18.04.1) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/7/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/7/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_df3ea' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cc1EIGwv.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_df3ea /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_30b45' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccIzNgqU.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_30b45 /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/7 -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/7/../../.. CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/7/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/cc1EIGwv.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccIzNgqU.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -516,7 +516,7 @@ Parsed CXX implicit link information from above output:
     arg [-znow] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_df3ea] ==> ignore
+    arg [cmTC_30b45] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/Scrt1.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/7/crtbeginS.o] ==> ignore
@@ -528,7 +528,7 @@ Parsed CXX implicit link information from above output:
     arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/x86_64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/7/../../..]
-    arg [CMakeFiles/cmTC_df3ea.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_30b45.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lstdc++] ==> lib [stdc++]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -556,14 +556,14 @@ Parsed CXX implicit link information from above output:
 Detecting CXX [-std=c++1z] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_b9865/fast"
-/usr/bin/make -f CMakeFiles/cmTC_b9865.dir/build.make CMakeFiles/cmTC_b9865.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_fe0ea/fast"
+/usr/bin/make -f CMakeFiles/cmTC_fe0ea.dir/build.make CMakeFiles/cmTC_fe0ea.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_b9865.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++1z -o CMakeFiles/cmTC_b9865.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_b9865
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b9865.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_b9865.dir/feature_tests.cxx.o  -o cmTC_b9865 
+Building CXX object CMakeFiles/cmTC_fe0ea.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++1z -o CMakeFiles/cmTC_fe0ea.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_fe0ea
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fe0ea.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_fe0ea.dir/feature_tests.cxx.o  -o cmTC_fe0ea 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -629,14 +629,14 @@ make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_functio
 Detecting CXX [-std=c++14] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_c6157/fast"
-/usr/bin/make -f CMakeFiles/cmTC_c6157.dir/build.make CMakeFiles/cmTC_c6157.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_c3a2e/fast"
+/usr/bin/make -f CMakeFiles/cmTC_c3a2e.dir/build.make CMakeFiles/cmTC_c3a2e.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_c6157.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_c6157.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_c6157
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c6157.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_c6157.dir/feature_tests.cxx.o  -o cmTC_c6157 
+Building CXX object CMakeFiles/cmTC_c3a2e.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_c3a2e.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_c3a2e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c3a2e.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_c3a2e.dir/feature_tests.cxx.o  -o cmTC_c3a2e 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -702,14 +702,14 @@ make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_functio
 Detecting CXX [-std=c++11] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_f9c58/fast"
-/usr/bin/make -f CMakeFiles/cmTC_f9c58.dir/build.make CMakeFiles/cmTC_f9c58.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_3720b/fast"
+/usr/bin/make -f CMakeFiles/cmTC_3720b.dir/build.make CMakeFiles/cmTC_3720b.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_f9c58.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_f9c58.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_f9c58
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f9c58.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_f9c58.dir/feature_tests.cxx.o  -o cmTC_f9c58 
+Building CXX object CMakeFiles/cmTC_3720b.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_3720b.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_3720b
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3720b.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_3720b.dir/feature_tests.cxx.o  -o cmTC_3720b 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 
@@ -775,14 +775,14 @@ make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_functio
 Detecting CXX [-std=c++98] compiler features compiled with the following output:
 Change Dir: /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_e28f7/fast"
-/usr/bin/make -f CMakeFiles/cmTC_e28f7.dir/build.make CMakeFiles/cmTC_e28f7.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_4c36b/fast"
+/usr/bin/make -f CMakeFiles/cmTC_4c36b.dir/build.make CMakeFiles/cmTC_4c36b.dir/build
 make[1]: Entering directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_e28f7.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_e28f7.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_e28f7
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e28f7.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_e28f7.dir/feature_tests.cxx.o  -o cmTC_e28f7 
+Building CXX object CMakeFiles/cmTC_4c36b.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_4c36b.dir/feature_tests.cxx.o -c /home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_4c36b
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4c36b.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_4c36b.dir/feature_tests.cxx.o  -o cmTC_4c36b 
 make[1]: Leaving directory '/home/jack/Documents/asteroid_retrieval/cost_function/build/CMakeFiles/CMakeTmp'
 
 

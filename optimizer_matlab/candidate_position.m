@@ -31,7 +31,7 @@ function state_out = candidate_position(t_epoch, state_epoch, state_in)
     
     % Dimensionalise
     
-    state_out(1:3) = state_in(1:3)*au;
-    state_out(4:6) = (state_in(4:6) / (365.25 * 86400)) * (2 * pi * au);
+    state_out(1:3) = state_out(1:3)*au;
+    state_out(4:6) = (state_out(4:6) / (365.25 * 86400)) * (2 * pi * au);
 
 end

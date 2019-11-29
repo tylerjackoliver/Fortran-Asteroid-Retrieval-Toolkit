@@ -37,7 +37,7 @@ SUBROUTINE CALFUN (N,X,F)
         integer 	:: i, j
         integer     :: iostate
 
-        character(*), parameter  :: targ_can='3390109'                   ! Target candidate string
+        character(*), parameter  :: targ_can='3435539'                   ! Target candidate string
         
         ! Find the state of the target and the original
     
@@ -53,7 +53,7 @@ SUBROUTINE CALFUN (N,X,F)
 
         ! Open input file
 
-        open(69, file='test_conditions_500000.dat')
+        open(69, file='../data/2019-11-23_topTransfers50000.csv')
 
         ! Compute the candidate position
 

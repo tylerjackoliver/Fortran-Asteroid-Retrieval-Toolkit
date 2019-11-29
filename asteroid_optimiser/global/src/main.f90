@@ -17,15 +17,15 @@ PROGRAM MAIN
 !    INITIALISE TRANSFER EPOCH 
 
     call FURNSH('naif0008.tls')
-    call STR2ET('23 Sep 2036 00:00', TRANSFER_EPOCH)
+    call STR2ET('22 Sep 2028 00:00', TRANSFER_EPOCH)
     call UNLOAD('naif0008.tls')
 
 !     INITIALISE BOUNDS
 
     MIN(1)=TRANSFER_EPOCH*.998D0
-    MIN(2)=1241.d0*86400.d0*0.8D0
+    MIN(2)=1239.d0*86400.d0*0.8D0
     MAX(1)=TRANSFER_EPOCH*1.002D0
-    MAX(2)=1241.d0*86400.d0*1.2D0
+    MAX(2)=1239.d0*86400.d0*1.2D0
 
     CALL GLOBAL(MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
 
@@ -69,10 +69,10 @@ END
 
         integer		:: multi_rev = 4
         integer 	:: num_rows
-        integer 	:: i, j
+        integer 	:: i, j, k
         integer     :: iostate
 
-        character(*), parameter  :: targ_can='3435539'                   ! Target candidate string
+        character(*), parameter  :: targ_can='3390109'                   ! Target candidate string
         
         ! Find the state of the target and the original
     
@@ -92,21 +92,34 @@ END
 
         ! Open input file
 
-        open(69, file='../data/2019-11-20_L2PlanarBackCondsSynodic.csv')
+        open(69, file='../data/2019-11-26_L2PlanarBackCondsGlobalDense.csv')
 
         ! Compute the candidate position
 
         call CANDIDATE_POSITION(transfer_epoch,state_epoch,state_can_orig,state_can)
 
-        do
+        main_loop: do
 
             read(69, *, iostat=iostate) state_targ(1), state_targ(2), state_targ(3), state_targ(4), state_targ(5), state_targ(6)
 
             if (iostate .ne. 0) then
 
-                exit
+                exit main_loop
     
             end if
+
+            ! Skip the reading above, try another
+
+            read(69, *, iostat=iostate) state_targ(1), state_targ(2), state_targ(3), state_targ(4), state_targ(5), state_targ(6)
+
+            ! In case the optimiser shits the bed
+
+            if (tt .lt. 0) then
+
+                exit main_loop
+
+            end if
+
 
             ! Rotate the state above via the relations in sanchez et. al.
 
@@ -193,7 +206,7 @@ END
 
                 call solve_lambert_gooding(state_can(1:3),state_rot(1:3),tt,mu,long_way,multi_rev,v1,v2,&
                     run_ok)
-
+                    
                 if (run_ok .eqv. .false.) then
 
                     min_vel = 1e6
@@ -228,7 +241,7 @@ END
 
         end do
 
-    end do
+    end do main_loop
 
     rewind(69)
     close(69)

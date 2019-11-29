@@ -20,8 +20,8 @@ t_irdot = [-sin(total_angle) cos(total_angle) 0;...
            -cos(total_angle) -sin(total_angle) 0; ...
            0 0 0];
        
-rPrime = t_ir*r';
-vPrime = t_ir * rdot' + t_irdot * r';
+rPrime = t_ir*r;
+vPrime = t_ir * rdot + t_irdot * r;
 
 stateOut = [rPrime; vPrime];
 

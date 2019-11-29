@@ -30,6 +30,8 @@ function min_vel = cost_function(x)
     
     targ_can = '3435539';           % Candidate to optimise
     
+    GMSun = 1.32712440018e11; %km^3/s^2
+    
     %% Get the state of the candidate, and the epoch bounds
     
     [state_can_orig, state_epoch, ~, ~] = ...
@@ -46,23 +48,22 @@ function min_vel = cost_function(x)
     
     %% Open the input file
     
-    top_transfers = dlmread('2019-11-23_topTransfers50000.csv');
+    top_transfers = readmatrix('2019-11-23_topTransfers50000.csv');
     
     %% Rotate candidate state from the state_epoch to the current time
     
     state_can = candidate_position(transfer_epoch, state_epoch, ...
-        state_can_orig, state_can);
+        state_can_orig);
     
     %% Perform main optimisation loop
     
-    for i = 1:length(top_transfers)
-        
+    for i = 1:50000
         state_targ = top_transfers(i, :);
         
         % The states above are defined at J2000. Therefore, apply the
         % relations from Sanchez et. al. to "propagate" the states forward
         
-        state_rot = rotator(state_targ, transfer_epoch, tt);
+        state_rot = rotator(state_targ, transfer_epoch, tt)';
         
         % Define the initial and final velocities of the target and the
         % candidate
@@ -73,22 +74,23 @@ function min_vel = cost_function(x)
         % Call the Lambert solver on state_rot (the target rotated to the
         % "correct" epoch). !!tt is in DAYS!!
         
-        [v1, v2, ~, ~] = lambert(r1, r2, tf, multi_rev, GM_central);
+        [v1, v2, ~, ~] = lambert(state_can(1:3), state_rot(1:3), tt/(86400), ...
+            multi_rev, GMSun);
         
         % Now iterate over v1, v2 to find transfer velocities
         
-        for j = 1:(numel(v2)/3)
+%         for j = 1:(numel(v2)/3)
             
-            vx1 = v1(j, 1);                                                                                                     % x-velocity at start of Lambert arc
-            vy1 = v1(j, 2);                                                                                                     % y-velocity at start of Lambert arc
-            vz1 = v1(j, 3);                                                                                                     % z-velocity at start of Lambert arc
+%             vx1 = v1(j, 1);                                                                                                     % x-velocity at start of Lambert arc
+%             vy1 = v1(j, 2);                                                                                                     % y-velocity at start of Lambert arc
+%             vz1 = v1(j, 3);                                                                                                     % z-velocity at start of Lambert arc
+% 
+%             vx2 = v2(j, 1);                                                                                                     % x-velocity at end of Lambert arc
+%             vy2 = v2(j, 2);                                                                                                     % y-velocity at end of Lambert arc
+%             vz2 = v2(j, 3);                                                                                                     % z-velocity at end of Lambert arc
 
-            vx2 = v2(j, 1);                                                                                                     % x-velocity at end of Lambert arc
-            vy2 = v2(j, 2);                                                                                                     % y-velocity at end of Lambert arc
-            vz2 = v2(j, 3);                                                                                                     % z-velocity at end of Lambert arc
-
-            transfer_v1  = ((vx1-vcx)^2 + (vy1-vcy)^2. + (vz1-vcz) ^ 2.)^.5;                                                    % deltaV from the candidate and the beginning of the lambert arc
-            transfer_v2  = ((vx2-vtx)^2 + (vy2-vty)^2. + (vz2-vtz) ^ 2.)^.5;                                                    % deltaV from the target and the end of the lambert arc
+            transfer_v1  = norm(v1 - state_can(4:6), 2);                                                    % deltaV from the candidate and the beginning of the lambert arc
+            transfer_v2  = norm(state_rot(4:6) - v2, 2);                                                  % deltaV from the target and the end of the lambert arc
             transfer_vel = transfer_v1 + transfer_v2;                                                                           % Total delta v is the sum of both; both > 0
 
             if transfer_vel < min_vel
@@ -96,6 +98,12 @@ function min_vel = cost_function(x)
                 min_vel = transfer_vel;
                 
             end
+            
+%         end
+        
+        if (mod(i, 10000) == 0)
+            
+            fprintf("Finished processing state %d\n", i);
             
         end
             

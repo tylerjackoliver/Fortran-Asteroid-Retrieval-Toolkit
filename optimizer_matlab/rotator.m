@@ -2,7 +2,7 @@ function state_out = rotator(state_in, epoch, tt)
 
     GMSun = 1.32712440018e11; %km^3/s^2
 
-    elts = cspice_oscelt(state_in, 0., GMSun); % States are defined at J2000!
+    elts = cspice_oscelt(state_in', 0., GMSun); % States are defined at J2000!
     
     % Apply relations from Sanchez et. al. The following code
     % block assumes that the time t is inputted as ephemeris

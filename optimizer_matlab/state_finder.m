@@ -27,23 +27,23 @@ function [state_out, time_count, time_lower, time_upper] = ...
     
     %% SPICE variables
     
-    abcorr = "NONE";
-    obs = "Sun";
-    targ_ear = "Earth";
-    coord = "ECLIPJ2000";
-    epoch_str = "Jan 1, 2020 00:00";
-    epoch_upper_str = "Jan 1, 2050 00:00";
+    abcorr = char("NONE");
+    obs = char("Sun");
+    targ_ear = char("Earth");
+    coord = char("ECLIPJ2000");
+    epoch_str = char("Jan 1, 2020 00:00");
+    epoch_upper_str = char("Jan 1, 2050 00:00");
     
     %% Program execution
     
     % Load the corresponding SPICE kernel
     
-    cspice_furnsh(sprintf('targ_can%s', '.bsp'));
+    cspice_furnsh(sprintf('%s.bsp', targ_can));
     
     % Get the epoch in terms of ephemeris seconds (et)
     
-    epoch = cspice_str2et(epoch_str);
-    epoch_upper = cspice_str2et(epoch_upper_str);
+    epoch = cspice_str2et(char('Jan 1, 2020 00:00'));
+    epoch_upper = cspice_str2et('Jan 1, 2050 00:00');
     
     % Initialise last_checked to this time
     

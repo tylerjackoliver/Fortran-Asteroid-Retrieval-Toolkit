@@ -67,7 +67,7 @@
         real(kind=dp)     :: min_transfer_time
         real(kind=dp)     :: min_loop_vel
 
-        character(*), parameter  :: targ_can='3435539'                   ! Target candidate string
+        character(*), parameter  :: targ_can='3390109'                   ! Target candidate string
         character(*), parameter :: input_file='../data/planarL2_newRange_globalBackwards.dat'
         ! character(*), parameter  :: input_file = '../data/states_globalL2Planar.csv'
 
@@ -175,7 +175,7 @@
         LOGICAL                                    :: long_way            ! Whether to compute the 'long solution' in the Lambert arc
         LOGICAL                                    :: run_ok              ! Boolean status flag for the Lambert subroutine
         
-        character(*), parameter  :: targ_can='3435539'                   ! Target candidate string
+        character(*), parameter  :: targ_can='3390109'                   ! Target candidate string
         character(*), parameter :: input_file='../data/2019-11-20_L2PlanarBackCondsGlobal.csv'
         ! character(*), parameter  :: input_file = '../data/states_globalL2Planar.csv'
 
@@ -195,7 +195,7 @@
 
         ! call OMP_SET_NUM_THREADS(4)
 
-        transfer_time = 1507.d0*86400.d0
+        transfer_time = 1239.d0*86400.d0
 
         min_loop_vel = 10.d6
 
@@ -205,7 +205,7 @@
 
         ! Get the transfer epoch
 
-        call STR2ET('23 Sep 2036 00:00',transfer_epoch)
+        call STR2ET('22 Sep 2028 00:00',transfer_epoch)
 
         transfer_epoch_looper = transfer_epoch 
         transfer_time_looper = transfer_time
@@ -303,6 +303,10 @@
         min_vel   = 1.d6
 
         read_loop: do itercount = 1, num_lines
+
+            ! Reset min_vel
+
+            min_vel   = 1.d6
 
             ! if (omp_get_thread_num() .eq. 0 .and. num_iters .eq. 0) then
             
@@ -444,15 +448,15 @@
             !$OMP ATOMIC
             num_iters = num_iters + 1
 
-            transfer_vel_arr(itercount, 1) = transfer_vel
-            transfer_vel_arr(itercount, 2:7) = state_targ
-
             ! if ( mod(num_iters, 10000) .eq. 0 .and. omp_get_thread_num() .eq. 0) then
             if (mod(num_iters, 10000) .eq. 0) then
 
                 write(*,*) "Finished checking state #", num_iters
 
             end if
+
+            transfer_vel_arr(itercount, 1) = min_vel
+            transfer_vel_arr(itercount, 2:) = state_targ
 
         end do read_loop
 
@@ -469,7 +473,9 @@
 
         do i = 1, num_lines
 
-            write(69, '(F12.4, 6F16.4)') transfer_vel_arr(i, :)
+            write(69, '(F12.4, A, F16.2, A, F16.2, A, F16.2, A, F16.2, A, F16.2, A, F16.2)') transfer_vel_arr(i, 1), ',', &
+            transfer_vel_arr(i, 2), ',', transfer_vel_arr(i, 3), ',', transfer_vel_arr(i, 4), ',', transfer_vel_arr(i, 5), ',', &
+            transfer_vel_arr(i, 6), ',', transfer_vel_arr(i, 7)
 
         end do
 

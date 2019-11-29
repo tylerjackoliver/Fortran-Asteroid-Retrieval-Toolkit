@@ -27,10 +27,10 @@ add_executable (ast_optim
 
                 # Main project file
                 src/precision.f90 
-                src/state_finder_imp.f90
+                src/state_determination.f90
                 src/constants.f90
                 src/main.f90
-                src/problem.f90
+                #                src/problem.f90
                 #                src/fit.f90 
                 #                src/fit.f90
                 #                src/testfunc.f90

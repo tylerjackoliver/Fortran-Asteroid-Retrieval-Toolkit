@@ -26,8 +26,8 @@ program main
             INTEGER(kind=sp)        :: unitno = 50
             INTEGER(kind=sp)        :: outunit= 51
 
-            CHARACTER(len=50)       :: infile = '2019-11-20_L2PlanarBackCondsSynodic.csv'
-            CHARACTER(len=50)       :: output = '2019-11-20_L2PlanarPlaneCondsGlobal.csv'
+            CHARACTER(len=50)       :: infile = '2019-11-26_L2PlanarBackCondsSynodicDense.csv'
+            CHARACTER(len=50)       :: output = '2019-11-26_L2PlanarBackCondsGlobalDense.csv'
 
             ! Open file
 
@@ -89,7 +89,7 @@ program main
                 stateout(4:6) = &
                     stateout(4:6)*2.d0*pi*au/(86400.d0*365.25d0)
 
-                write(outunit,'(3F16.3,3F16.8)') stateout(1:6)
+                write(outunit,'(3F16.3,3F16.6)') stateout(1:6)
 
                 write(*,*) "Finished processing item", i
 

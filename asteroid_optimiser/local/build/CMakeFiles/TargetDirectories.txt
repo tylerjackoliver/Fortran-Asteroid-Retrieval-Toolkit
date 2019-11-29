@@ -1,0 +1,3 @@
+/home/jack/Documents/asteroid_retrieval/asteroid_optimiser/local/build/CMakeFiles/rebuild_cache.dir
+/home/jack/Documents/asteroid_retrieval/asteroid_optimiser/local/build/CMakeFiles/ast_optim.dir
+/home/jack/Documents/asteroid_retrieval/asteroid_optimiser/local/build/CMakeFiles/edit_cache.dir
