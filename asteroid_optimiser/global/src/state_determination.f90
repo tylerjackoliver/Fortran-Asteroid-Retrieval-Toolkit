@@ -130,7 +130,7 @@ module state_determination
                 abcorr          = 'NONE'
                 obs             = 'Sun'
                 coord           = 'ECLIPJ2000'
-                epoch_str       = 'Jan 1, 2027 00:00'       
+                epoch_str       = 'Jan 1, 2020 00:00'       
                 epoch_upper_str = 'Jan 1, 2050 00:00'
 
                 ! call welcomemessage(targ_can)
@@ -179,9 +179,8 @@ module state_determination
                     ! tau_can = 2*pi*sqrt(a_can**3/mu)                        ! Period of the
                     !                                                         ! candidate, seconds
 
-                    print *, ang_can 
-                    print *, ang_ear
-
+                    print *, "Earth angle: ", ang_ear, "Candidate angle: ", ang_can
+                    
                     if (abs(ang_ear-ang_can) < pi/8) then
 
                         last_checked = epoch_counter
