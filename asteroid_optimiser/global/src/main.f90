@@ -71,6 +71,8 @@ END
         integer 	:: num_rows
         integer 	:: i, j, k
         integer     :: iostate
+        integer     :: best_index                           ! Best index of target state
+        integer     :: itercount = 0
 
         character(*), parameter  :: targ_can='3390109'                   ! Target candidate string
         
@@ -92,11 +94,13 @@ END
 
         ! Open input file
 
-        open(69, file='../data/2019-11-26_L2PlanarBackCondsGlobalDense.csv')
+        open(69, file='../data/2019-11-23_topTransfers50000.csv')
 
         ! Compute the candidate position
 
         call CANDIDATE_POSITION(transfer_epoch,state_epoch,state_can_orig,state_can)
+
+        itercount = 0
 
         main_loop: do
 
@@ -120,6 +124,7 @@ END
 
             end if
 
+            itercount = itercount + 1
 
             ! Rotate the state above via the relations in sanchez et. al.
 
@@ -183,6 +188,8 @@ END
                 if (transfer_vel < min_vel) then
 
                     min_vel = transfer_vel
+                    best_index = itercount
+                    
                     
                 end if
 
@@ -236,12 +243,15 @@ END
                 if (transfer_vel < min_vel) then
 
                     min_vel  = transfer_vel
+                    best_index = itercount
 
                 end if
 
         end do
 
     end do main_loop
+
+    print *, "Best solution was", best_index
 
     rewind(69)
     close(69)

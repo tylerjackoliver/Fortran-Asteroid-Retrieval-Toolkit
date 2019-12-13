@@ -113,6 +113,7 @@ module state_determination
                 CHARACTER(len=19)           :: epoch_str                                ! String of the lower epoch bound
                 CHARACTER(len=19)           :: epoch_upper_str                          ! String of the upper epoch bound
                 CHARACTER(len=7)            :: targ_ear                                 ! String of the target body (Earth)
+                CHARACTER(len=20)           :: utc_str                                  ! String for holding the date in calendar format
 
                 INTEGER                     :: istate = 0                               ! Success flag, iteration counter, max. array locator
 
@@ -129,7 +130,7 @@ module state_determination
                 abcorr          = 'NONE'
                 obs             = 'Sun'
                 coord           = 'ECLIPJ2000'
-                epoch_str       = 'Jan 1, 2020 00:00'       
+                epoch_str       = 'Jan 1, 2027 00:00'       
                 epoch_upper_str = 'Jan 1, 2050 00:00'
 
                 ! call welcomemessage(targ_can)
@@ -148,6 +149,10 @@ module state_determination
                 call STR2ET(epoch_upper_str, epoch_upper)
 
                 last_checked = epoch                                        ! To prevent errors on first run
+
+                ! MODIFIED 13/12: Now computes the state w.r.t. one year, not one period!
+
+                tau_can = 365.25 * 86400.d0 ! One synodic periodic, seconds
 
                 do epoch_counter = epoch, epoch_upper, 86400
 
@@ -169,10 +174,13 @@ module state_determination
                     ang_can = datan2(state_can(2),state_can(1))
                     ang_ear = datan2(state_ear(2),state_ear(1))
 
-                    a_can   = oe_can(1)/(1.0_dp - oe_can(2))                ! Calculate SMA from
-                                                                            ! RP and e
-                    tau_can = 2*pi*sqrt(a_can**3/mu)                        ! Period of the
-                                                                            ! candidate, seconds
+                    ! a_can   = oe_can(1)/(1.0_dp - oe_can(2))                ! Calculate SMA from
+                    !                                                         ! RP and e
+                    ! tau_can = 2*pi*sqrt(a_can**3/mu)                        ! Period of the
+                    !                                                         ! candidate, seconds
+
+                    print *, ang_can 
+                    print *, ang_ear
 
                     if (abs(ang_ear-ang_can) < pi/8) then
 
@@ -210,6 +218,8 @@ module state_determination
                 time_lower = last_checked
                 time_upper = last_checked+tau_can
 
+                print *, time_upper - time_lower
+
                 do epoch_counter = time_lower, time_upper, 16600
 
                     ! Get the initial state of Earth and candidate
@@ -237,6 +247,12 @@ module state_determination
                 ! Unload the SPICE kernel
 
                 call UNLOAD(targ_can//'.bsp')
+
+                ! Print message
+
+                call ET2UTC(time_count, 'C', 0, utc_str)
+
+                print '(A, A, A)', "The reference epoch for candidate ", targ_can, " is: ", utc_str
 
             end subroutine get_state
 
