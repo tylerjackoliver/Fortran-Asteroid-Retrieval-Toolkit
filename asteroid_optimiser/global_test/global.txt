@@ -1,0 +1,384 @@
+
+
+        SHORT DESCRIPTION OF THE GLOBAL OPTIMIZATION SUBROUTINE
+        -------------------------------------------------------
+
+
+Global optimization is a part of nonlinear optimization, it deals with
+problems with (possibly) several local minima. The presented method is
+stochastic (i.e. not deterministic). The framework procedure, the GLOBAL
+routine gives a computational evidence, that the best local minimum found is
+with high probability the global minimum.  This routine calls a local search
+routine, and a routine for generating random numbers.
+
+The subroutines are written in FORTRAN.  The user has to provide a main program
+doing the input - output, and a subroutine capable of computing the objective
+function value for any point in the parameter space.  There were different
+versions for IBM-compatible mainframes and personal computers.  The subroutine
+GLOBAL can be used for the approximate solution of the global minimization
+problem, as follows:
+
+Let F(X) be a real function of NPARM parameters and we are looking for
+parameter values X(I) from the given intervals [MIN(I), MAX(I)] for each
+I = 1, 2, ..., NPARM.  The problem is to determine such a point X*, that the
+function value F(X) is greater than or equal to F(X*) for every X in the
+NPARM-dimensional interval specified by MIN(I)'s and MAX(I)'s.
+
+The given version allows 15 parameters to be optimized.  For modifying the
+program to accept larger problems change the numbers 15 everywhere in the
+source lines to the new value N, and change 120 in a declaration to N(N+1)/2.
+
+
+
+
+I. THE ALGORITHM
+----------------
+
+The algorithm consists of the following steps:
+
+0. step: initialization of the parameters of the algorithm.  X0 is the set of
+         the local minima found, F0 contains corresponding values of the
+         objective function.  The local minima are ordered increasingly
+         according to the function values.  X1 is the set of points starting
+         from which the local search procedure led to a local minimum.  These
+         points are called seed points, and as such they are used as seed
+         points in the clustering phase.  At the start the mentioned sets are
+         empty.  The subroutine checks the parameter bounds, and gives error
+         message, and stops if they are not correct, or if they do not meet
+         the requirements.
+
+1. step: generate sample points with uniform distribution, and add them to the
+         sample.  The number of generated points is specified by NSAMPL.
+
+2. step: generate the actual sample, as the best 100 * NSEL/NSAMPL percentage
+         of the sample points generated so far (according to the objective
+         function values).  This actual sample contains in general NSEL more
+         points than the previous one.
+
+3. step: form clusters in the actual sample by Single Linkage method, by
+         growing the clusters first around the seed points (elements of the
+         sets X0 and X1).  A new point will join a cluster, if there is a point
+         in the cluster with which the distance is less than a critical
+         distance calculated automatically by the program for the given
+         problem, and if the point in the cluster has a smaller objective
+         function value than that of the considered one.  The critical distance
+         depends on the number of points in the whole sample, and on the
+         dimension of the problem NPARM.  If all points of the actual sample
+         are successfully ordered to some of the existing clusters, then comes
+         the 5th step.
+
+4. step: start local search from the actual sample points not yet clustered in
+         ascending order by the values of the respective function values. If
+         the result of the local search is close to an element of the sets X0
+         and X1, then the starting point will be added to the set X1.  If the
+         result of the local search cannot be clustered to any of the existing
+         clusters then the point is regarded as a new local minimizer, and is
+         added to X0.  Choose now this result point of the local search to be a
+         seed point, and try to find (not clustered) points in the current
+         sample that can be clustered to this one.  If a new local minimum was
+         found in step 4, go to the step 1.
+
+5. step: determine the element of the set X0 with the smallest function value.
+         This is the candidate of the program for the global minimizer.  Stop.
+
+
+The presented program is a modification of the algorithm by Boender et al.
+(see [1]).  The following changes were made.
+
+1. The local search procedure is an algorithm of Quasi-Newton type which uses
+   the so called DFP (Davidon-Fletcher-Powell) update formula.  The comparison
+   of this local search method with others can be found in [2].  For smooth
+   objective functions this seems to be a good choice, for problems with
+   discontinuous objective function or derivatives the robust random search
+   method UNIRANDI (more details in [5]) can be recommended.
+
+2. The subroutine GLOBAL will automatically scale the parameters to be
+
+   optimized (as in [3]) in order to keep all the starting points of the
+   parameters between -1 and 1 for the local minimizer procedure.  The user
+   does not have to care about the scaling, because the results are
+   transformed back to the original interval before each output, and before
+   giving the control back to the calling program.
+
+3. We have also made use of later results [6] on this method.  For example, the
+   condition used at clustering has been changed to another one.
+
+4. Instead of the Euclidean distance the greatest difference in absolute
+   values is used in our GLOBAL routine.  This change leads to a simpler and
+   quicker version of the algorithm.
+
+
+
+II. HOW TO CALL THE SUBROUTINE GLOBAL
+-------------------------------------
+
+    CALL GLOBAL (MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
+
+MIN and MAX are real vectors (input) of NPARM elements.  They specify an
+NPARM-dimensional interval that contains the starting points for the local
+searches, i.e. the Ith coordinate of a random sample point, X(I) is always in
+[MIN(I), MAX(I)].  The values of this vector will not be changed during the run
+of the GLOBAL subroutine.
+
+NPARM is an integer constant (input) containing the number of the parameters
+to be optimized.  The value will not be changed during the run of GLOBAL.
+
+M is an integer constant (input) containing the number of the residual
+functions.  The n+1 dimensional function f(i,x) is a residual function, if the
+objective function can be written in the form F(x) = f(1,x)**2 + f(2,x)**2 +
+... + f(M,x)**2.  The parameter M was used only earlier, when a Levenberg-
+Marquardt method was applied as a local search procedure.  With the present
+routines this parameter is not used any more, yet it can be applied to pass
+values from the main program to the routine FUNCT calculating the objective
+function.
+
+NSAMPL is an integer constant (input) containing the number of the sampling
+points to be generated in the parameter space with uniform distribution in one
+loop.  The value will not be changed during the run of the GLOBAL subroutine.
+
+NSEL is an integer constant (input).  In one sampling the number of points
+selected for starting points of local search routine is NSEL.  These points are
+those with the smallest objective function value.  The value will not be
+changed by the GLOBAL routine.
+
+IPR is an integer constant (input), the FORTRAN logical file number for the
+output file. The value will not be changed during the GLOBAL run.  The user
+should take care on the corresponding OPEN statement in the main program.  In
+the IBM-PC version of the GLOBAL routine each output of the routine will be
+repeated for the default unit (the screen).
+
+NSIG is an integer constant (input), a parameter for the stopping criterion of
+the local search algorithm.  If the value of the objective function is the same
+in the last two steps in the first NSIG significant digits, then the local
+search will be cancelled.  The value of NSIG will not be changed during the run
+of GLOBAL.
+
+X0 is a two-dimensional array of 15 * 20 real elements (output).  After the run
+of GLOBAL this matrix contains the parameters of the local minimizer points
+found: the J-th local minimizer vector is stored in X0(I,J) I=1,2,...,NPARM.
+These minimizers are ordered in ascending order according to their objective
+function values.  X0 will be set by GLOBAL.
+
+NC is an integer constant (output) containing the number of the local minima
+found. This constant will be set by the GLOBAL routine.
+
+F0 is a real array of 20 elements (output) that contains the objective
+function values of the respective local minimizer points.  Thus F(X0(.,J)) =
+F0(J).  F0 will be set by GLOBAL.
+
+
+
+III. THE FOLLOWING SUBROUTINES ARE CALLED BY THE SUBROUTINE GLOBAL:
+-------------------------------------------------------------------
+
+URDMN, FUN, LOCAL, UPDATE, FUNCT, TIMER
+
+The user has to provide only the routine FUNCT (see later) out of the
+mentioned.  URDMN generates the uniformly distributed pseudorandom numbers.  If
+necessary, it can be replaced with any other routine (in case the latter
+fulfills the calling requirements).
+
+The starting value for the random number generation is given by the TIMER
+routine.  This starting value is based on the computer clock, hence it is
+expected to be different for all runs.  The routine TIMER is written in the
+ASSEMBLER language of the IBM-PC (MASM).  It can be changed to another routine
+that asks the user what should be the starting number - if it is preferred.
+
+FUN transforms the scaled variables back before calling the FUNCT routine.  It
+is provided together with the GLOBAL routine.  Thus, the user can write the
+FUNCT routine according to the usual parameter space.
+
+The subroutines LOCAL and UPDATE contain the Quasi-Newton local search method.
+If a random search algorithm is preferred, the routine UNIRANDI should be
+linked, it has the same calling form as LOCAL.
+
+
+
+IV. THE SUBROUTINE FUNCT FOR COMPUTING THE OBJECTIVE FUNCTION
+-------------------------------------------------------------
+
+The calling sequence is:
+
+                  CALL FUNCT (X, F, NPARM, M)
+
+where the parameters should be understood as follows:
+
+X is a real vector of NPARM elements (input) containing the values of the
+parameters, i.e. the co-ordinates of the point in the parameter space.  The
+variables X(I) are now not scaled.  (They are transformed back to the interval
+given by the user.)  The vector X must not be changed in the routine FUNCT.
+
+F is a real constant (output).  This variable has to contain the computed
+objective function value after returning from the routine FUNCT.
+
+M is an integer constant (input).  In earlier versions of the program it
+contained the number of residual functions.  This variable is not used any more
+in the recent version of the GLOBAL routine, thus it can be applied to
+transfer values from the main program to the FUNCT routine.  It can be changed
+freely.
+
+If there are more necessary information besides the values of X, NPARM and M
+for the routine FUNCT, then they can be passed through COMMON variables.
+
+
+
+V. LIMITATIONS
+--------------
+
+parameter           limitation               otherwise
+
+------------------------------------------------------------------------------
+
+MIN(I)              MIN(I) = MAX(I)          error message, interrupt
+
+MAX(I)              MIN(I) = MAX(I)          error message, interrupt
+
+NPARM               1 <= NPARM <= 15         error message, interrupt
+
+M                   M <= 100                 error message, interrupt
+
+NSAMPL              20 <= NSAMPL <= 10000    the value of NSAMPL is changed to
+                                             20 or 10000 whichever is closer
+                                             to the previous value
+
+NSEL                1 <= NSEL <= 20          the value of NSEL is changed to 1
+                                             or 20 whichever is closer to the
+                                             previous value
+
+------------------------------------------------------------------------------
+
+The memory required for the GLOBAL subroutine and for the routines called by
+it is around 80 Kbyte in the present version.  The use of a numerical
+coprocessor reduces the computation time substantially (it depends on the
+objective function very much).  The recent version is written in Microsoft
+FORTRAN Version 4.01, and it is compatible with the FORTRAN 77 standard.
+
+
+
+VI. INPUT - OUTPUT
+------------------
+
+There is no separate input of the GLOBAL subroutine, and its output goes to
+the given logical device (specified by IPR).  This output gives a document of
+the run, and provides a list of the local minima found.
+
+
+
+VII. THE SUGGESTED VALUES FOR THE PARAMETERS OF THE ALGORITHM
+-------------------------------------------------------------
+
+The filling out of the arrays MIN and MAX does not mean generally any problem.
+The program accepts the input parameters even if MAX(I) is less than MIN(I).
+However, if MIN(I) = MAX(I) the program halts with an error message.  According
+to this description of the algorithm, the sampling points are generated in the
+NPARM-dimensional interval given by vectors MIN and MAX.  However, the local
+search may leave this interval.  If the given limits are ment as strict limits,
+the objective function should be modified to incorporate some form of penalty
+for points outside the interval.
+
+The usual value for IPR is 6.  In the main program the file with the logical
+file number IPR has to be opened.
+
+NSAMPL and NSEL can affect the reliability of the GLOBAL subroutine.  If NSAMPL
+= NSEL, then the subroutine corresponds to the so-called Multiply Starts
+method (usually it is not sufficiently efficient).  It is worth to choose
+NSAMPL to be at least as large as the number of function evaluations used by a
+single local search. The smaller the NSEL/NSAMPL ratio, the smaller can be the
+region of attraction of the global minimum.  Thus, decreasing this ratio will
+cause the GLOBAL routine to be more reliable.
+
+It is not worth to give small value for NSIG.  Take into account that the local
+search procedure is capable to determine the location of the local minimum
+only to that extent what is allowed by the objective function.  As a minimum, 6
+is suggested for a value of NSIG. The clustering phase of the GLOBAL routine
+is more effective if the local minima are well approximated by the local
+search procedure.
+
+
+
+VIII. SAMPLE PROGRAM TO SHOW THE USAGE OF THE GLOBAL SUBROUTINE ON PC-S
+-----------------------------------------------------------------------
+
+      REAL X0(15,20), F0(20), MIN(15), MAX(15)
+
+      M = 1
+      NPARM = 1
+      NSAMPL = 100
+      NSEL = 2
+      IPR = 6
+
+      OPEN(6, FILE='OUTPUT')
+
+      NSIG = 6
+      MIN(1) = -100.0
+      MAX(1) =  100.0
+
+      CALL GLOBAL(MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
+
+      END
+
+
+
+      SUBROUTINE FUNCT(X, VALUE, NPARM, M)
+
+      DIMENSION X(1)
+
+      VALUE = 1.0 - COS(X(1)) + (X(1)/100.0)**2
+
+      RETURN
+      END
+
+The given test example is a one-dimensional problem, it has several local
+minima.  The global minimum is 0, and the objective function reaches this value
+at the point x(1) = 0.0. The test program found 5 local minima in 48 sec. -
+among them the global one - with 523 function evaluations.  Note, that if the
+NSEL/NSAMPL ratio is too small, then the local minima with relatively large
+objective function values cannot be found by the program.  This feature is
+useful if we are interested mainly only in the global minimum.
+
+In order to run this program, one should, of course, link it with the
+subroutine GLOBAL and with those called by it.
+
+If you encounter any problems using GLOBAL, please inform
+
+Dr. Tibor Csendes,
+Institute of Informatics, Jozsef Attila University
+H-6701 Szeged, Pf. 652, Hungary
+
+Phone: +36 62 310 011 (ext. 3839)
+
+Fax: +36 62 312 292
+
+E-mail: csendes@inf.u-szeged.hu
+
+URL: http://www.inf.u-szeged.hu/~csendes/
+
+You can find additional important information in the comments of the source codes.
+
+
+
+REFERENCES
+----------
+
+1. Boender, C.G.E., A.H.G. Rinnooy Kan, G.T. Timmer, L. Stougie: A stochastic
+   method for global optimization, Mathematical Programming 22(1982) 125-140.
+
+2. Gill, P.E., W. Murray, M.H. Wright: Practical Optimization (Academic Press,
+   London, 1981).
+
+3. Csendes, T., B. Daroczy, Z. Hantos: Nonlinear parameter estimation by
+   global optimization: comparison of local search methods in respiratory
+   system modelling, in: System Modelling and Optimization (Springer-Verlag,
+   Berlin, 1986) 188-192.
+
+4. Csendes, T.: Nonlinear parameter estimation by global optimization -
+   Efficiency and reliability, Acta Cybernetica 8(1988) 361-370.
+
+5. Jarvi, T.: A random search optimizer with an application to a maxmin
+   problem, Publications of the Inst. of Appl. Math., Univ. of Turku, No. 3,
+   1973.
+
+6. Timmer, G.T.: Global optimization: a stochastic approach, (Ph.D. Thesis,
+   Erasmus University, Rotterdam, 1984).
+
+Last update: 8.6.1995
