@@ -21,18 +21,14 @@ PROGRAM MAIN
     NSIG = 6                                            ! Number of significant figures to use
 !    INITIALISE TRANSFER EPOCH 
 
-    call FURNSH('naif0008.tls')
-    call STR2ET('22 Sep 2028 00:00', TRANSFER_EPOCH)
-    call UNLOAD('naif0008.tls')
-
-    call STATE_FINDER('3390109', state_can_orig, state_epoch, time_lower, time_upper)
+    call STATE_FINDER('3435539', state_can_orig, state_epoch, time_lower, time_upper)
 
 !     INITIALISE BOUNDS
 
     MIN(1)=time_lower
-    MIN(2)=1239.d0*86400.d0*0.8D0
+    MIN(2)=365.D0 * 86400.D0
     MAX(1)=time_upper
-    MAX(2)=1239.d0*86400.d0*1.2D0
+    MAX(2)=1600.D0 * 86400.D0
 
     CALL GLOBAL(MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
 
@@ -101,7 +97,7 @@ END
 
         ! Open input file
 
-        open(69, file='../data/2019-11-23_topTransfers50000.csv')
+        open(69, file='../data/2019-11-20_L2PlanarBackCondsGlobal.csv')
 
         ! Compute the candidate position
 
@@ -257,8 +253,6 @@ END
         end do
 
     end do main_loop
-
-    print *, "Best solution was", best_index
 
     rewind(69)
     close(69)
