@@ -169,10 +169,6 @@ module state_determination
 
                     call ET2UTC(epoch_counter, 'C', 0, utc_str)
 
-                    print '(A, A, A)', "The reference epoch for candidate ", targ_can, " is: ", utc_str
-
-                    print *, "Candidate angle: ", ang_can
-                    
                     if (abs(ang_can) < pi/8) then
 
                         last_checked = epoch_counter
@@ -209,7 +205,7 @@ module state_determination
                 time_lower = last_checked
                 time_upper = last_checked+tau_can
 
-                print *, time_upper - time_lower
+                !print *, time_upper - time_lower
 
                 do epoch_counter = time_lower, time_upper, 16600
 
@@ -243,7 +239,7 @@ module state_determination
 
                 call ET2UTC(time_count, 'C', 0, utc_str)
 
-                print '(A, A, A)', "The reference epoch for candidate ", targ_can, " is: ", utc_str
+!                print '(A, A, A)', "The reference epoch for candidate ", targ_can, " is: ", utc_str
 
             end subroutine get_state
 
