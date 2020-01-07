@@ -7,37 +7,37 @@ SUBROUTINE CALFUN (N,X,F)
 
         implicit none
 
-        integer		:: N
+        integer		                        :: N
         
-        real*8		:: x(n), f
-        real*8      :: state_can(6)                         ! Asteroid candidate state
-        real*8      :: state_can_orig(6)                    ! Un-rotated asteroid candidate state
-        real*8		:: state_targ(6)
-        real*8		:: state_rot(6)
-        real*8      :: transfer_epoch                       ! Epoch of transfer
-        real*8      :: transfer_time                        ! Time-of-flight
-        real*8      :: state_epoch                          ! Epoch of the candidate state
-        real*8		:: time_lower
-        real*8		:: time_upper
-        real*8		:: tt 									! Transfer time
-        real*8		:: vx1, vx2, vy1, vy2, vz1, vz2
-        real*8		:: vtx, vty, vtz, vcx, vcy, vcz
-        real*8	    :: transfer_v1, transfer_v2
-        real*8		:: transfer_vel
-        real*8		:: min_vel = 10.d6
+        real*8		                        :: x(n), f                              ! Input state vector (x = (epoch, transfer_time)
+        real*8                              :: state_can(6)                         ! Asteroid candidate state
+        real*8                              :: state_can_orig(6)                    ! Un-rotated asteroid candidate state
+        real*8		                        :: state_targ(6)                        ! State of the target, un-rotated
+        real*8		                        :: state_rot(6)                         ! State of the target, rotated
+        real*8                              :: transfer_epoch                       ! Epoch of transfer
+        real*8                              :: transfer_time                        ! Time-of-flight
+        real*8                              :: state_epoch                          ! Epoch of the candidate state
+        real*8		                        :: time_lower                           ! Lower bound of the 
+        real*8		                        :: time_upper
+        real*8		                        :: tt 									! Transfer time
+        real*8		                        :: vx1, vx2, vy1, vy2, vz1, vz2
+        real*8		                        :: vtx, vty, vtz, vcx, vcy, vcz
+        real*8	                            :: transfer_v1, transfer_v2
+        real*8		                        :: transfer_vel
+        real*8		                        :: min_vel = 10.d6
 
-        logical long_way									! Which direction is 
-        logical run_ok
+        logical                             :: long_way								
+        logical                             :: run_ok
 
-        real*8, allocatable, dimension(:, :) :: v1
-        real*8, allocatable, dimension(:, :) :: v2
+        real*8, allocatable, dimension(:, :):: v1
+        real*8, allocatable, dimension(:, :):: v2
 
-        integer		:: multi_rev = 4
-        integer 	:: num_rows
-        integer 	:: i, j
-        integer     :: iostate
+        integer		                        :: multi_rev = 4
+        integer 	                        :: num_rows
+        integer 	                        :: i, j
+        integer                             :: iostate
 
-        character(*), parameter  :: targ_can='3435539'                   ! Target candidate string
+        character(*), parameter  :: targ_can='3550232'                              ! Target candidate string
         
         ! Find the state of the target and the original
     
@@ -53,7 +53,7 @@ SUBROUTINE CALFUN (N,X,F)
 
         ! Open input file
 
-        open(69, file='../data/2019-11-23_topTransfers50000.csv')
+        open(69, file='../data/2019-11-20_L2PlanarBackCondsGlobal.csv')
 
         ! Compute the candidate position
 

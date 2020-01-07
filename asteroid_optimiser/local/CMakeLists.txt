@@ -7,6 +7,7 @@ project (ast_optim)
 
 include_directories(${CMAKE_BINARY_DIR}/../mod/)
 link_directories(${CMAKE_BINARY_DIR}/../lib/)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 OPTION (USE_OpenMP "Use OpenMP" ON)
 IF(USE_OpenMP)
@@ -22,7 +23,7 @@ add_executable (ast_optim
 
                 # Main project file
                 src/precision.f90 
-                src/state_finder_imp.f90
+                src/state_determination.f90
                 src/constants.f90
                 src/calfun.f90
                 src/main.f

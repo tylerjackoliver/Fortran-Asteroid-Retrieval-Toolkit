@@ -175,7 +175,7 @@
         LOGICAL                                    :: run_ok              ! Boolean status flag for the Lambert subroutine
         
         character(*), parameter  :: targ_can='3435539'                   ! Target candidate string
-        character(*), parameter :: input_file='../data/planarL2_newRange_globalBackwards.dat'
+        character(*), parameter :: input_file='../data/2019-11-20_L2PlanarBackCondsGlobal.csv'
         ! character(*), parameter  :: input_file = '../data/states_globalL2Planar.csv'
 
         ! //////////////////////////////////////////////////////////

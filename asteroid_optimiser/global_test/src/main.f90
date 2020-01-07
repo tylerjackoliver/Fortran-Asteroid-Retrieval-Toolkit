@@ -1,36 +1,54 @@
 PROGRAM MAIN
 
-    USE global_minimum
-    use state_determination
+    ! ///////////////////////////////////////////////////////////
+    !
+    ! Interfaces the GLOBAL global optimsation routine with the
+    ! Lambert transfer cost function
+    !
+    ! ///////////////////////////////////////////////////////////
 
-    REAL*8 X0(30,20), F0(20), MIN(2), MAX(2), TRANSFER_EPOCH, VALUE
-    INTEGER M, NPARM
-    real*8 state_can_orig(6)                    ! Un-rotated asteroid candidate state
-    real*8 time_lower
-    real*8 time_upper
-    real*8 state_epoch                          ! Epoch of the candidate state
+    USE global_minimum                                                              ! Use the optimiser
+    use state_determination                                                         ! Use the state determination routines
 
-    M = 1
-    NPARM = 2
+    real*8  X0(30,20), F0(20), MIN(2), MAX(2), TRANSFER_EPOCH, VALUE                ! Optimiser variables
+    real*8  state_can_orig(6)                                                       ! Un-rotated asteroid candidate state
+    real*8  time_lower                                                              ! Lower bound for the optimiser (epoch)
+    real*8  time_upper                                                              ! Upper bound for the optimiser (epoch)
+    real*8  state_epoch                                                             ! Epoch of the candidate state
+    
+    integer M, NPARM                                                                ! More optimiser variables
+
+    M      = 1
+    NPARM  = 2
     NSAMPL = 50
-    NSEL = 2
-    IPR = 77
+    NSEL   = 2
+    IPR    = 77
+
+    ! Open the output file for the optimiser
 
     OPEN(IPR, FILE='OUTPUT')
 
-    NSIG = 6                                            ! Number of significant figures to use
-!    INITIALISE TRANSFER EPOCH 
+    ! Number of significant figures in optimiser print-outs
 
-    call STATE_FINDER('3435539', state_can_orig, state_epoch, time_lower, time_upper)
+    NSIG = 9
 
-!     INITIALISE BOUNDS
+    ! Initialise transfer epoch bounds - call state_finder to get bounds and ignore
+    ! other outputs (state_can_orig, state_epoch)
 
-    MIN(1)=time_lower
-    MIN(2)=365.D0 * 86400.D0
-    MAX(1)=time_upper
-    MAX(2)=1600.D0 * 86400.D0
+    call STATE_FINDER('3550232', state_can_orig, state_epoch, time_lower, time_upper)
+
+    ! Initialise bounds for the optimiser
+
+    MIN(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
+    MIN(2) = 0.0D0 * 86400.D0                                                       ! Minimum transfer duration (seconds)
+    MAX(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
+    MAX(2) = 1600.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+
+    ! Call the optimiser
 
     CALL GLOBAL(MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
+
+    ! Close the output file
 
     CLOSE(IPR)
 
@@ -38,46 +56,62 @@ END
 
     SUBROUTINE FUNCT(X, MIN_VEL, NPARM, M)
 
-        use precision_kinds                                 ! Defines appropriate variable kinds for double and quadruple precision
-        use constants                                       ! Standardises constants
-        use state_determination                             ! Use the state determination routines (self-written)
-        use fortran_astrodynamics_toolkit                   ! Use the FAT, third-party astrodynamics library
+        ! ///////////////////////////////////////////////////////////
+        !
+        ! Optimiser cost function
+        !
+        ! Inputs
+        ! ~~~~~~
+        ! X: State vector. X = (epoch, transfer time)
+        ! NPARM: Optimiser variable.
+        ! M: Optimiser variable.
+        !
+        ! InOuts
+        ! ~~~~~~
+        ! MIN_VEL: minimum-velocity transfer in the dataset
+        !
+        ! ///////////////////////////////////////////////////////////
+
+        use precision_kinds                                                         ! Defines appropriate variable kinds for double and quadruple precision
+        use constants                                                               ! Standardises constants
+        use state_determination                                                     ! Use the state determination routines (self-written)
+        use fortran_astrodynamics_toolkit                                           ! Use the FAT, third-party astrodynamics library
 
         implicit none
 
-        integer		:: NPARM, M
-        
-        real*8		:: x(:)
-        real*8      :: state_can(6)                         ! Asteroid candidate state
-        real*8      :: state_can_orig(6)                    ! Un-rotated asteroid candidate state
-        real*8		:: state_targ(6)
-        real*8		:: state_rot(6)
-        real*8      :: transfer_epoch                       ! Epoch of transfer
-        real*8      :: transfer_time                        ! Time-of-flight
-        real*8      :: state_epoch                          ! Epoch of the candidate state
-        real*8		:: time_lower
-        real*8		:: time_upper
-        real*8		:: tt 									! Transfer time
-        real*8		:: vx1, vx2, vy1, vy2, vz1, vz2
-        real*8		:: vtx, vty, vtz, vcx, vcy, vcz
-        real*8	    :: transfer_v1, transfer_v2
-        real*8		:: transfer_vel
-        real*8		:: min_vel
+        integer		                                :: NPARM, M
+            
+        real*8		                                :: x(:)                         ! Input state vector
+        real*8                                      :: state_can(6)                 ! Asteroid candidate state
+        real*8                                      :: state_can_orig(6)            ! Un-rotated asteroid candidate state
+        real*8		                                :: state_targ(6)                ! Un-rotated target state
+        real*8		                                :: state_rot(6)                 ! Rotated target state
+        real*8                                      :: transfer_epoch               ! Epoch of transfer
+        real*8                                      :: transfer_time                ! Time-of-flight
+        real*8                                      :: state_epoch                  ! Epoch of the candidate state
+        real*8		                                :: time_lower                   ! Lower bound for the optimisation time - dummy here
+        real*8		                                :: time_upper                   ! Upper bound for the optimisation time - dummy here
+        real*8		                                :: tt 							! Transfer time
+        real*8		                                :: vx1, vx2, vy1, vy2, vz1, vz2 ! Velocities of the beginning and end of the Lambert arc
+        real*8		                                :: vtx, vty, vtz, vcx, vcy, vcz ! Velocities of the candidate and target at beginning and end of ""
+        real*8	                                    :: transfer_v1, transfer_v2     ! Departure velocity of Lambert transfer, insertion velocity of Lambert transfer
+        real*8		                                :: transfer_vel                 ! Transfer velocities
+        real*8		                                :: min_vel                      ! Minimum velocity transfer
 
-        logical long_way									! Which direction is 
-        logical run_ok
+        logical                                     :: long_way						! Which direction for the Lambert transfer
+        logical                                     :: run_ok                       ! Boolean success variable for the Lambert
 
-        real*8, allocatable, dimension(:, :) :: v1
-        real*8, allocatable, dimension(:, :) :: v2
+        real*8, allocatable, dimension(:, :)        :: v1                           ! Velocity of beginning of Lambert arc
+        real*8, allocatable, dimension(:, :)        :: v2                           ! Velocity of the end of the Lambert arc
 
-        integer		:: multi_rev = 4
-        integer 	:: num_rows
-        integer 	:: i, j, k
-        integer     :: iostate
-        integer     :: best_index                           ! Best index of target state
-        integer     :: itercount = 0
+        integer		                                :: multi_rev = 4                ! Number of Lambert arc revolutions (up to)
+        integer 	                                :: num_rows                     ! Size of the v1, v2 arrays
+        integer 	                                :: i, j, k                      ! Loop sentinels
+        integer                                     :: iostate                      ! Status flag for Fortran file I/O
+        integer                                     :: best_index                   ! Best index of target state
+        integer                                     :: itercount = 0                ! Iteration counter
 
-        character(*), parameter  :: targ_can='3390109'                   ! Target candidate string
+        character(*), parameter                     :: targ_can='3550232'           ! Target candidate string
         
         ! Find the state of the target and the original
     
@@ -105,9 +139,15 @@ END
 
         itercount = 0
 
+        ! Main iteration loop: go through the data file and compute Lamberts to that state
+
         main_loop: do
 
+            ! Read state in
+
             read(69, *, iostat=iostate) state_targ(1), state_targ(2), state_targ(3), state_targ(4), state_targ(5), state_targ(6)
+
+            ! If at the end of the file, exit gracefully
 
             if (iostate .ne. 0) then
 
@@ -115,17 +155,15 @@ END
     
             end if
 
-            ! Skip the reading above, try another
-
-            read(69, *, iostat=iostate) state_targ(1), state_targ(2), state_targ(3), state_targ(4), state_targ(5), state_targ(6)
-
-            ! In case the optimiser shits the bed
+            ! In case the optimiser shits the bed with invalid inputs
 
             if (tt .lt. 0) then
 
                 exit main_loop
 
             end if
+
+            ! Increase the iteration counter by 1
 
             itercount = itercount + 1
 
@@ -146,7 +184,9 @@ END
 
             ! Now, call the lambert solver on state_rot (the target
             ! state rotated to the correct epoch). First, with long_way
-            ! set to false
+            ! set to false.
+            !
+            ! TODO: Make this a function
 
             long_way = .false.
 
