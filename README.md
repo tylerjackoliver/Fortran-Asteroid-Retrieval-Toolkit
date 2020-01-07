@@ -1,4 +1,4 @@
-# Asteroid Retrieval
+# Asteroid Retrieval - Refactors ongoing
 
 Global repository for all asteroid retrieval-related codes. The following sub-folders exist:
 
