@@ -1,6 +1,6 @@
 ## Asteroid optimisers
 
-Main routines are global/ and local/.
+The main routine is global/.
 
 * global/ implements a Derivative-Free Boender-Timmer-Rinnoy Kan algorithm to attempt to find the global minimum. The main program used.
 * local/ implements the BOBYQA derivative-free local optimiser. Not often used; rarely makes improvements on the global solver.
