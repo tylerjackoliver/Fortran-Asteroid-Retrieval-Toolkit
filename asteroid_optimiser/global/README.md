@@ -17,9 +17,9 @@ A proper interface to this function is yet to be developed. As such, the filenam
 
 These subroutines use CMake to build the necessary softwares.
 
-This program relies on the proper libraries for the SPICE toolkit in the proper compiler and platform version being present in lib/ (and renamed to be libspice.a, since the default name of spicelib.a is incompatible with default CMAKE library names.)
+This program relies on the proper libraries for the SPICE toolkit in the proper compiler and platform version being present in ```lib/``` (and renamed to be ```libspice.a```, since the default name of ```spicelib.a``` is incompatible with default CMAKE library names.)
 
-The [Fortran Astrodynamics Toolkit](https://github.com/jacobwilliams/Fortran-Astrodynamics-Toolkit) is required for the Lambert solver. FAT itself requires [FoBiS.py](https://github.com/szaghi/FoBiS), a Fortran-specific proprietary automatic build system; for all its flaws, it's the only way to get the FAT working. The module files for FAT should be placed in mod/.
+The [Fortran Astrodynamics Toolkit](https://github.com/jacobwilliams/Fortran-Astrodynamics-Toolkit) is required for the Lambert solver. FAT itself requires [FoBiS.py](https://github.com/szaghi/FoBiS), a Fortran-specific proprietary automatic build system; for all its flaws, it's the only way to get the FAT working. The module files for FAT should be placed in ```mod/```, and the ```libfat.a``` library file placed in ```lib/```.
 
 To build, simply use:
 
@@ -32,4 +32,5 @@ at the terminal. Similar scripts exist to clean the directory, and rebuild (clea
 ## Tested compilers and platforms
 
 MacOS, gfortran-8, gcc-8, Python 3.6.
+
 Ubuntu, gfortran-7, gcc-7, Python 3.4.
