@@ -7,54 +7,25 @@ PROGRAM MAIN
     !
     ! ///////////////////////////////////////////////////////////
 
-    USE global_minimum                                                              ! Use the optimiser
+    use global_minimum                                                              ! Use the optimiser
     use state_determination                                                         ! Use the state determination routines
+    use problem_parameters                                                          ! Problem set-up parameters
 
-    real*8  X0(30,20), F0(20), MIN(2), MAX(2), TRANSFER_EPOCH, VALUE                ! Optimiser variables
-    real*8  state_can_orig(6)                                                       ! Un-rotated asteroid candidate state
-    real*8  time_lower                                                              ! Lower bound for the optimiser (epoch)
-    real*8  time_upper                                                              ! Upper bound for the optimiser (epoch)
-    real*8  state_epoch                                                             ! Epoch of the candidate state
-    
-    integer M, NPARM                                                                ! More optimiser variables
+    ! Load variables into memory
 
-    M      = 1
-    NPARM  = 2
-    NSAMPL = 50
-    NSEL   = 2
-    IPR    = 77
-
-    ! Open the output file for the optimiser
-
-    OPEN(IPR, FILE='OUTPUT')
-
-    ! Number of significant figures in optimiser print-outs
-
-    NSIG = 9
-
-    ! Initialise transfer epoch bounds - call state_finder to get bounds and ignore
-    ! other outputs (state_can_orig, state_epoch)
-
-    call STATE_FINDER('3550232', state_can_orig, state_epoch, time_lower, time_upper)
-
-    ! Initialise bounds for the optimiser
-
-    MIN(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-    MIN(2) = 0.0D0 * 86400.D0                                                       ! Minimum transfer duration (seconds)
-    MAX(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-    MAX(2) = 1600.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+    call VARIABLE_INIT()
 
     ! Call the optimiser
 
-    CALL GLOBAL(MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
+    call GLOBAL(MIN, MAX, NPARM, M, NSAMPL, NSEL, IPR, NSIG, X0, NC, F0)
 
-    ! Close the output file
+    ! Exit gracefully
 
-    CLOSE(IPR)
+    call VARIABLE_DESTRUCT()
 
 END
 
-    SUBROUTINE FUNCT(X, MIN_VEL, NPARM, M)
+    SUBROUTINE FUNCT(X, MIN_VEL, NPARMTR, MM)
 
         ! ///////////////////////////////////////////////////////////
         !
@@ -76,21 +47,18 @@ END
         use constants                                                               ! Standardises constants
         use state_determination                                                     ! Use the state determination routines (self-written)
         use fortran_astrodynamics_toolkit                                           ! Use the FAT, third-party astrodynamics library
+        use problem_parameters                                                      ! Problem set-up parameters
 
         implicit none
 
-        integer		                                :: NPARM, M
+        integer, intent(in)                         :: NPARMTR, MM
             
         real*8		                                :: x(:)                         ! Input state vector
         real*8                                      :: state_can(6)                 ! Asteroid candidate state
-        real*8                                      :: state_can_orig(6)            ! Un-rotated asteroid candidate state
         real*8		                                :: state_targ(6)                ! Un-rotated target state
         real*8		                                :: state_rot(6)                 ! Rotated target state
         real*8                                      :: transfer_epoch               ! Epoch of transfer
         real*8                                      :: transfer_time                ! Time-of-flight
-        real*8                                      :: state_epoch                  ! Epoch of the candidate state
-        real*8		                                :: time_lower                   ! Lower bound for the optimisation time - dummy here
-        real*8		                                :: time_upper                   ! Upper bound for the optimisation time - dummy here
         real*8		                                :: tt 							! Transfer time
         real*8		                                :: vx1, vx2, vy1, vy2, vz1, vz2 ! Velocities of the beginning and end of the Lambert arc
         real*8		                                :: vtx, vty, vtz, vcx, vcy, vcz ! Velocities of the candidate and target at beginning and end of ""
@@ -111,13 +79,7 @@ END
         integer                                     :: best_index                   ! Best index of target state
         integer                                     :: itercount = 0                ! Iteration counter
 
-        character(*), parameter                     :: targ_can='3550232'           ! Target candidate string
-        
-        ! Find the state of the target and the original
-    
-        call STATE_FINDER(targ_can, state_can_orig, state_epoch, time_lower, time_upper)
-
-        ! Get the candidate position at the correct time x(1)
+        ! Initialise the transfer epoch
 
         transfer_epoch = x(1)
 
@@ -129,43 +91,17 @@ END
 
         min_vel = 1.d6
 
-        ! Open input file
-
-        open(69, file='../data/2019-11-20_L2PlanarBackCondsGlobal.csv')
-
         ! Compute the candidate position
 
         call CANDIDATE_POSITION(transfer_epoch,state_epoch,state_can_orig,state_can)
 
-        itercount = 0
-
         ! Main iteration loop: go through the data file and compute Lamberts to that state
 
-        main_loop: do
+        main_loop: do itercount = 1, num_targets, 2
 
-            ! Read state in
+            ! Get states
 
-            read(69, *, iostat=iostate) state_targ(1), state_targ(2), state_targ(3), state_targ(4), state_targ(5), state_targ(6)
-
-            ! If at the end of the file, exit gracefully
-
-            if (iostate .ne. 0) then
-
-                exit main_loop
-    
-            end if
-
-            ! In case the optimiser shits the bed with invalid inputs
-
-            if (tt .lt. 0) then
-
-                exit main_loop
-
-            end if
-
-            ! Increase the iteration counter by 1
-
-            itercount = itercount + 1
+            state_targ = dataset(itercount, :)
 
             ! Rotate the state above via the relations in sanchez et. al.
 
@@ -290,13 +226,15 @@ END
 
                 end if
 
-        end do
+            end do
 
     end do main_loop
 
     rewind(69)
     close(69)
 
+    print *, "Function evaluation completed."
+
     RETURN
 
-    END
+END

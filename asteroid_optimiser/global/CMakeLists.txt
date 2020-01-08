@@ -30,11 +30,8 @@ add_executable (ast_optim
                 src/state_determination.f90
                 src/constants.f90
                 src/main.f90
-                #                src/problem.f90
-                #                src/fit.f90 
-                #                src/fit.f90
-                #                src/testfunc.f90
                 src/global.f90 
+                src/problem_parameters.f90
 )
 
 #>> Compilation Options
