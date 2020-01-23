@@ -26,8 +26,8 @@ module problem_parameters
     ! PROBLEM PARAMETERS - CHANGE ME
     !
     character(*), parameter :: targ_can = '3390109'
-    character(*), parameter :: datafile = '../data/2019-11-20_L2PlanarBackCondsGlobal.csv'
-    real*8,       parameter :: minimum_transfer_time = 0.0D0 * 86400                        ! Seconds
+    character(*), parameter :: datafile = '../data/2020-01-12_L2PlanarBackCondsGlobal.csv'
+    real*8,       parameter :: minimum_transfer_time = 365.d0* 86400                        ! Seconds
     real*8,       parameter :: maximum_transfer_time = 1600.d0 * 86400                      ! Seconds
     !
     ! //////////////////////////////
@@ -58,7 +58,7 @@ module problem_parameters
         
             M      = 1                                                                      ! No longer used
             NPARM  = 2                                                                      ! Problem dimensions
-            NSAMPL = 50                                                                     ! Number of points for sampling. 50 recommended in documentation
+            NSAMPL = 15                                                                     ! Number of points for sampling. 50 recommended in documentation
             NSEL   = 2                                                                      ! Number of points selected for starting points in sampling
             IPR    = 77                                                                     ! File unit used for writing output
 
@@ -68,10 +68,15 @@ module problem_parameters
 
             ! Optimiser bounds
 
+            call FURNSH('../data/naif0008.tls')
+            call STR2ET('2032 Feb 15 00:00', time_lower)
+            call STR2ET('2032 Mar 15 00:00', time_upper)
+            call UNLOAD('../data/naif0008.tls')
+
             MIN(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            MIN(2) = 0.0D0 * 86400.D0                                                       ! Minimum transfer duration (seconds)
+            MIN(2) = 1200.D0 * 86400.D0                                                       ! Minimum transfer duration (seconds)
             MAX(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            MAX(2) = 1600.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+            MAX(2) = 1300.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
         
             if (.not. is_loaded) call load_data()
 
@@ -115,6 +120,8 @@ module problem_parameters
 
             ! Open file; set number of targets (== number of lines) to zero
 
+            write(*, '(A)', advance="no") "Determining number of lines..."
+
             num_targets = 0
             open(37, file=datafile)
 
@@ -133,6 +140,8 @@ module problem_parameters
                 num_targets = num_targets + 1
 
             end do
+
+            write(*, '(A)') "done."
 
             ! Now we know the number of lines, rewind the file pointer and allocate the database
             ! file into memory (likely very large, so approach with caution on low-memory machines)

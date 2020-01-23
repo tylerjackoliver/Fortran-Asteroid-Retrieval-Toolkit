@@ -105,7 +105,7 @@ END
 
             ! Rotate the state above via the relations in sanchez et. al.
 
-            call ROTATOR(state_targ, transfer_epoch, tt, state_rot)
+            call ROTATOR_MOD(state_targ, transfer_epoch, tt, state_rot)
 
             ! Define initial and final velocities of the target and of
             ! the candidate

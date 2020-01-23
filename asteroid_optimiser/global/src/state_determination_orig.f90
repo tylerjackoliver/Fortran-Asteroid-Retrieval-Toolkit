@@ -102,6 +102,7 @@ module state_determination
                 REAL(kind=dp)               :: distance                                 ! Distance between the candidate and the Earth
                 REAL(kind=dp)               :: max_distance                             ! Maximum distance between the candidate and the Earth
                 REAL(kind=dp), dimension(6) :: state_can, state_ear, state_syn          ! States of the can.,Earth, and the synodic state of the candidate respectively
+                REAL(kind=dp)               :: rng(3)                                   ! Random numbers generated to alter the state
 
                 CHARACTER(len=6)            :: abcorr                                   ! Abberation correcton string: initialised to NONE
                 CHARACTER(len=5)            :: obs                                      ! Observing body string
@@ -235,6 +236,15 @@ module state_determination
                 ! Unload the SPICE kernel
 
                 call UNLOAD(targ_can//'.bsp')
+
+                ! 2020-01-15: Initialise RNG to slightly alter candidate state
+
+                call RANDOM_SEED()
+                call RANDOM_NUMBER(rng) ! Populates rng with 0 \leq x < 1
+
+                ! Alter the state using rng -- amount to alter? 1% of state? (so O(0.01) => * 0.1)
+
+                state_can(1:3) = state_can(1:3) * (1.d0 + rng(1:3) * .1d0)
 
             end subroutine get_state
 
@@ -372,49 +382,10 @@ module state_determination
                 end if
         
                 ! Convert from orbital elements -> state at the later epoch
-                ! 2020-01-16 - epoch should be just EPOCH, not EPOCH+TT!
-                ! CONICS automatically calls PROP2B if they are different, which will just double-propagate our rotation!
-                
+        
                 call CONICS(elts, epoch + tt, state_out)
         
             end subroutine ROTATOR
-
-            subroutine ROTATOR_MOD(state_in, epoch, tt, state_out)
-
-                use precision_kinds
-                use constants
-
-                REAL(kind=dp), intent(in)   :: state_in(6)
-                REAL(kind=dp), intent(in)   :: epoch
-                REAL(kind=dp), intent(in)   :: tt
-                REAL(kind=dp), intent(out)  :: state_out(6) 
-
-                REAL(kind=dp)               :: cang
-                REAL(kind=dp)               :: sang
-
-                REAL(kind=dp)               :: theta
-                REAL(kind=dp)               :: theta_dot
-                REAL(kind=dp)               :: t_ir(3, 3)
-                REAL(kind=dp)               :: t_ir_dot(3, 3)
-
-                theta_dot = 2.d0 * pi / (86400.d0 * 365.25d0)
-                theta     = (tt + epoch) * theta_dot
-
-                cang = dcos(theta)
-                sang = dsin(theta)
-
-                t_ir(1,1) = cang; t_ir(1,2) = -sang; t_ir(1,3) = 0.d0;
-                t_ir(2,1) = sang; t_ir(2,2) = cang ; t_ir(2,3) = 0.d0;
-                t_ir(3,1) = 0.d0; t_ir(3,2) = 0.d0 ; t_ir(3,3) = 1.d0;
-
-                t_ir_dot(1,1) = -sang; t_ir_dot(1,2) = -cang; t_ir_dot(1,3) = 0.d0;
-                t_ir_dot(2,1) = cang ; t_ir_dot(2,2) = -sang; t_ir_dot(2,3) = 0.d0;
-                t_ir_dot(3,1:3) = 0.d0;
-
-                state_out(1:3) = matmul(t_ir, state_in(1:3))
-                state_out(4:6) = matmul(t_ir, state_in(4:6))
-
-            end subroutine ROTATOR_MOD
 
             subroutine SYNODIC_ROTATE(state_in, t, state_out)
 
