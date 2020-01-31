@@ -32,7 +32,6 @@ add_executable (ast_optim
                 src/main.f90
                 src/global.f90 
                 src/problem_parameters.f90
-                src/lambert_transfer_module.f90
 )
 
 #>> Compilation Options
