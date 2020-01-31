@@ -1,6 +1,13 @@
-# Global optimiser
+# Mixed-Integer Distributed Ant Colony Optimiser
 
-Contains routines to perform the global optimiser on the Lambert transfers.
+Uses [MIDACO](https://midaco-solver.com) to perform a global optimisation on the asteroid retrieval trajectories in invariant manifolds of the CR3BP.
+
+The optimisation problem is defined by three continuous variables:
+
+ * t<sub>0</sub>: Epoch of the transfer (Ephemeris seconds)
+ * t<sub>t</sub>: Transfer time (s)
+ * t<sub>end</sub>: Backwards integration time from the target plane (interpolated; dimensionless)
+ * n<sub>mnfd</sub>: Discretisation along the target periodic orbit (interpolated; dimensionless)
 
 ## Program set-up
 
@@ -9,17 +16,49 @@ Create a folder called data/ in the root directory of the optimiser. In it, the 
   * de414.bsp
   * naif0008.tls
   * Ephemeris files for any of the desired candidates.
-  * Data files for the manifold conditions; csv files with size n x 6, where the units are km, km/s in the inertial frame.
+  * Data files for the manifold conditions; csv files with size n x 7, containing the backwards integration time in the synodic frame in column one, and the state vector in the remaining columns, where the units are km, km/s in the inertial frame.
+  * Original orbit dataset: csv file with size n x 7, containing the backwards integration time in the synodic frame in column one, and the state vector in the remaining columsns, where the units are km, km/s in the inertial frame.
   
-A proper interface to this function is yet to be developed. As such, the filename for the datafile must be manually edited in ```main/src.f90```, as well as all references to the target candidate. A COMMON block to handle this data will be implemented in the near future.
+The file `problem_parameters.f90` can then be adjusted to your particular problem:
+
+```Fortran
+
+    ! ///////////////////////////////////////////////////////////
+    ! Inputs
+    ! ~~~~~~
+    ! targ_can: SPK ID of the target candidate
+    ! datafile: Location of target dataset file
+    ! dataset: Allocatable double-precision array that contains the target section
+    ! is_loaded: Whether the dataset has been loaded into memory
+    ! minimum_transfer_time: Minimum duration of Lambert arc (optimiser constraint)
+    ! maximum_transfer_time: Maximum duration of Lambert arc (optimiser constraint)
+    !
+    ! ///////////////////////////////////////////////////////////
+
+    ! //////////////////////////////
+    ! 
+    ! PROBLEM PARAMETERS - CHANGE ME
+    !
+    character(*),  parameter :: targ_can = '3390109'
+    character(*),  parameter :: data_file = '../data/2020-01-12_L2PlanarBackCondsGlobal.csv'
+    character(*),  parameter :: original_orbit_data = '../data/original_orbits.csv'
+    real(kind=dp), parameter :: minimum_transfer_time = 1.d0* 86400                          ! Seconds
+    real(kind=dp), parameter :: maximum_transfer_time = 1600.d0 * 86400                      ! Seconds
+    !
+    ! //////////////////////////////
+
+```
+
+If further tweaking is required (i.e. the input data-file is discretized differently), then `variable_initialisation.f90` also needs to be edited, particularly the discretisation measures:
+
+```Fortran
+
+    integer, parameter      :: t_end_disc = 100                                             ! Parameterisation in backwards time
+    integer, parameter      :: n_mnfd_disc = 360                                            ! Parameterisation around the orbit
+
+```
 
 ## Building
-
-These subroutines use CMake to build the necessary softwares.
-
-This program relies on the proper libraries for the SPICE toolkit in the proper compiler and platform version being present in ```lib/``` (and renamed to be ```libspice.a```, since the default name of ```spicelib.a``` is incompatible with default CMAKE library names.)
-
-The [Fortran Astrodynamics Toolkit](https://github.com/jacobwilliams/Fortran-Astrodynamics-Toolkit) is required for the Lambert solver. FAT itself requires [FoBiS.py](https://github.com/szaghi/FoBiS), a Fortran-specific proprietary automatic build system; for all its flaws, it's the only way to get the FAT working. The module files for FAT should be placed in ```mod/```, and the ```libfat.a``` library file placed in ```lib/```.
 
 To build, simply use:
 
