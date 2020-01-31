@@ -20,8 +20,9 @@ Specific dependencies are listed in the README.md of every subfolder; however, t
 
 * [jacobwilliams/Fortran-Astrodynamics-Toolkit](https://github.com/jacobwilliams/bspline-fortran/) -- used for general Lambert transfers 
 
-* NAIF Spice Toolkit (<https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html>) -- used for determining ephemeris data
-`CMAKE` & `make` -- used for building all of the source codes
+* [NAIF Spice Toolkit](<https://naif.jpl.nasa.gov/naif/toolkit_FORTRAN.html>) -- used for determining ephemeris data
+
+* `CMAKE` & `make` -- used for building all of the source codes
 
 * The codes written by `jacobwilliams` also depend on [FoBiS.py](https://github.com/szaghi/FoBiS), an automated build system designed specifically for Fortran, and written in Python.
 
