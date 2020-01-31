@@ -10,4 +10,4 @@ Global repository for all asteroid retrieval-related codes. The following sub-fo
 
 ---
 
-Contact: [Jack Tyler](jack.tyler@soton.ac.uk)
+Contact: [Jack Tyler](mailto:jack.tyler@soton.ac.uk)
