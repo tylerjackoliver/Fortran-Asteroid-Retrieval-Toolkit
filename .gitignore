@@ -1,3 +1,4 @@
+*.m~
 FAT/*
 *.dat
 data/corrected_oe/
@@ -5,3 +6,6 @@ data/corrected_oe/
 *.csv
 *.bsp
 corrected_oe/
+*.png
+*/mod/*
+*/lib/*

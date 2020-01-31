@@ -153,7 +153,7 @@ integer, parameter      :: iunit = 70                                           
             write(*, '(A)', advance="no") "Determining number of lines..."
             num_targets = 0
             open(97, file=datafile)
-            open(98, file="../data/2020-01-28_L2PlanarPertubedConds.csv")
+            open(98, file=original_orbit_data)
             open(iunit, file="../data/paretoFront_"//targ_can)
 
             ! Read through in do-loop until EOF to determine number of lines
