@@ -41,33 +41,38 @@ program main
 
     implicit none
 
-    integer                         :: nthreads = 2                                          ! Number of threads to use
-    integer                         :: unitno, candidatecount, itercount                     ! Counting variables
-    integer                         :: i, j, k                                               ! Loop variables 
-    integer                         :: bodyID                                                ! SPK ID of the body being investigated
-    integer                         :: desireddate                                           ! Week ID to compute the solution for
-                                                                                             ! For use on Lyceum, the input was parameterised by date. At higher core counts,
-                                                                                             ! It becomes feasible to do all dates at once.
+    integer                                     :: nthreads = 2                                          ! Number of threads to use
+    integer                                     :: candidatecount
+    integer                                     :: itercount
+    integer                                     :: unitno                                                ! Counting variables
+    integer                                     :: i, j, k                                               ! Loop variables 
+    integer                                     :: bodyID                                                ! SPK ID of the body being investigated
+    integer                                     :: desireddate                                           ! Week ID to compute the solution for
+                                                                                                         ! For use on Lyceum, the input was parameterised by date. At higher core counts,
+                                                                                                         ! It becomes feasible to do all dates at once.
 
-    real                            :: a_b                                                   ! SMA of body
-    real                            :: e_b                                                   ! Eccentricity of body 
-    real                            :: inb                                                   ! Inclination of body (rad!!)
-    real                            :: rp_t                                                  ! Periapse radius of target
-    real                            :: e_t
-    real                            :: in_t                                                  ! Inclination of target (deg!!)
-    real                            :: start                                                 ! OMP WTIME timing
-    real                            :: finish                                                ! ""
-    real                            :: M_t                                                   ! Mean anomaly of the target
-    real                            :: mindV                                                 ! minimum delta V
-    real                            :: t1, t2, t3, t4, t5, date, o, Om, M, p                 ! Temporary variables
+    real(kind=dp)                               :: a_b                                                   ! SMA of body
+    real(kind=dp)                               :: e_b                                                   ! Eccentricity of body 
+    real(kind=dp)                               :: in_b                                                  ! Inclination of body (rad!!)
 
-    integer, dimension(17719)       :: database                                              ! SPK ID Database
+    real(kind=dp)                               :: rp_t                                                  ! Periapse radius of target
+    real(kind=dp)                               :: e_t
+    real(kind=dp)                               :: in_t                                                  ! Inclination of target (deg!!)
 
-    real,    dimension(1353, 3)     :: bodyData                                              ! rp_b, e_b, inb,  of the target body (needed only for Hohmann)
-    real,    dimension(360000,4)    :: targetData                                            ! rp_b, e_t, in_t, M_t of the target manifold section
+    real(kind=dp)                               :: start                                                 ! OMP WTIME timing
+    real(kind=dp)                               :: finish                                                ! ""
+    
+    real(kind=dp)                               :: M_t                                                   ! Mean anomaly of the target
+    real(kind=dp)                               :: mindV                                                 ! minimum delta V
+    real(kind=dp)                               :: t1, t2, t3, t4, t5, date, o, Om, M, p                 ! Temporary variables
 
-    character(len=260)              :: bodystring, filepath                                  ! String of the body SPK ID (file IO), filepath for directory prefix
-    character(len=8)                :: fmt = '(I7.7)'                                        ! Formatting for result I/O
+    integer, dimension(17719)                   :: database                                              ! SPK ID Database
+
+    real(kind=dp),    dimension(1353, 3)        :: bodyData                                              ! rp_b, e_b, inb,  of the target body (needed only for Hohmann)
+    real(kind=dp),    dimension(360000,4)       :: targetData                                            ! rp_b, e_t, in_t, M_t of the target manifold section
+
+    character(len=260)                          :: bodystring, filepath                                  ! String of the body SPK ID (file IO), filepath for directory prefix
+    character(len=8)                            :: fmt = '(I7.7)'                                        ! Formatting for result I/O
 
     ! Variable initialisations
 
@@ -211,7 +216,7 @@ subroutine file_add(bodyID, unitnum, mindv, k)
     integer, intent(in) :: unitnum
     integer, intent(in) :: k
 
-    real, intent(in)    :: mindv
+    real(kind=dp), intent(in)    :: mindv
     
     integer             :: outval1, outval2
 
@@ -265,31 +270,31 @@ end subroutine file_check
 
 subroutine cheapest(a_b, e_b, inb, rp_t, e_t, in_t, M_t, cheap)
 
-    real, intent(in)    :: a_b                  ! SMA of the candidate (km)
-    real, intent(in)    :: e_b                  ! Eccentricity of the candidate
-    real, intent(in)    :: inb                  ! Inclination of the candiate (deg)
-    real, intent(in)    :: rp_t                 ! Radius of periapsis of the target (km)
-    real, intent(in)    :: e_t                  ! Eccentricity of the target
-    real, intent(in)    :: in_t                 ! Inclination of the target (rad)
-    real, intent(in)    :: M_t                  ! Mean anomaly of the target (rad)
+    real(kind=dp), intent(in)    :: a_b                  ! SMA of the candidate (km)
+    real(kind=dp), intent(in)    :: e_b                  ! Eccentricity of the candidate
+    real(kind=dp), intent(in)    :: inb                  ! Inclination of the candiate (deg)
+    real(kind=dp), intent(in)    :: rp_t                 ! Radius of periapsis of the target (km)
+    real(kind=dp), intent(in)    :: e_t                  ! Eccentricity of the target
+    real(kind=dp), intent(in)    :: in_t                 ! Inclination of the target (rad)
+    real(kind=dp), intent(in)    :: M_t                  ! Mean anomaly of the target (rad)
 
-    real, intent(out)   :: cheap                ! Cheapest Hohmann transfer (km/s)
+    real(kind=dp), intent(out)   :: cheap                ! Cheapest Hohmann transfer (km/s)
 
-    real                :: mu_s                 ! Solar graviational parameter (km ^ 2/s ^ 3)
-    real                :: ra_b                 ! Radius of apoapsis of candidate (km)
-    real                :: rp_b                 ! Radius of periapsis of candidate (km)
-    real                :: ra_t                 ! Radius of apoaosis of target (km)
-    real                :: a_t                  ! SMA of target (km)
-    real                :: a_int                ! SMA of intermediate transfer arc (km)
-    real                :: a_f                  ! Equivalent SMA of target (doesn't really exist)
-    real                :: rstar                ! Quotient for inclination change calculation
-    real                :: dVi                  ! Velocity required for inclination change (km/s)
-    real                :: dV1                  ! Velocity required for first Hohmann maneouvre (km/s)
-    real                :: dV2                  ! Velocity required for second Hohmann maneouvre (km/s)
-    real                :: v1                   ! Total velocity required for first maneouvre (km/s)
-    real                :: v2                   ! Total velocity required for second maneouvre (km/s)
-    real                :: v3                   ! Total velocity required for first maneouvre (km/s)
-    real                :: v4                   ! Total velocity required for second maneouvre (km/s)
+    real(kind=dp)                :: mu_s                 ! Solar graviational parameter (km ^ 2/s ^ 3)
+    real(kind=dp)                :: ra_b                 ! Radius of apoapsis of candidate (km)
+    real(kind=dp)                :: rp_b                 ! Radius of periapsis of candidate (km)
+    real(kind=dp)                :: ra_t                 ! Radius of apoaosis of target (km)
+    real(kind=dp)                :: a_t                  ! SMA of target (km)
+    real(kind=dp)                :: a_int                ! SMA of intermediate transfer arc (km)
+    real(kind=dp)                :: a_f                  ! Equivalent SMA of target (doesn't real(kind=dp)ly exist)
+    real(kind=dp)                :: rstar                ! Quotient for inclination change calculation
+    real(kind=dp)                :: dVi                  ! Velocity required for inclination change (km/s)
+    real(kind=dp)                :: dV1                  ! Velocity required for first Hohmann maneouvre (km/s)
+    real(kind=dp)                :: dV2                  ! Velocity required for second Hohmann maneouvre (km/s)
+    real(kind=dp)                :: v1                   ! Total velocity required for first maneouvre (km/s)
+    real(kind=dp)                :: v2                   ! Total velocity required for second maneouvre (km/s)
+    real(kind=dp)                :: v3                   ! Total velocity required for first maneouvre (km/s)
+    real(kind=dp)                :: v4                   ! Total velocity required for second maneouvre (km/s)
 
     double precision    :: pi = 4.*datan(1.d0)
 
