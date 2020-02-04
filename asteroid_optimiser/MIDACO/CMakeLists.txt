@@ -26,6 +26,7 @@ add_executable (ast_optim
                 src/compute_spline.f90
                 src/variable_initialisation.f90
                 src/midaco.f
+                src/ancillary_data.f90
 )
 
 #>> Compilation Options
