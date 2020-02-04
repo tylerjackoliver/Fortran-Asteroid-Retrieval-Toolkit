@@ -24,9 +24,9 @@ module problem_parameters
     ! PROBLEM PARAMETERS - CHANGE ME
     !
     character(*),  parameter :: targ_can = '3390109'
-    character(*),  parameter :: datafile = '../data/2020-01-12_L2PlanarBackCondsGlobal.csv'
-    character(*),  parameter :: original_orbit_data = '../data/original_orbits.csv'
-    real(kind=dp), parameter :: minimum_transfer_time = 365.d0* 86400                        ! Seconds
+    character(*),  parameter :: datafile = '../data/2020-01-28_L2PlanarBackCondsGlobal.csv'
+    character(*),  parameter :: original_orbit_data = '../data/2020-02-01_L2PlanarPerturbedConds.csv'
+    real(kind=dp), parameter :: minimum_transfer_time = 1.d0* 86400                        ! Seconds
     real(kind=dp), parameter :: maximum_transfer_time = 1600.d0 * 86400                      ! Seconds
     !
     ! //////////////////////////////
