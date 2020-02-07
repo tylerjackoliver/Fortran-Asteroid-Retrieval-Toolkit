@@ -4,7 +4,6 @@ module variable_initialisation
     use constants
     use state_determination
     use problem_parameters
-    use ancillary_data
 
     integer, parameter      :: O = 2                                                        ! Number of objectives
     integer, parameter      :: N = 4                                                        ! Number of variables
@@ -43,7 +42,7 @@ module variable_initialisation
     integer                 :: num_targets                                                  ! Number of items in the input file
     integer                 :: num_orbits                                                   ! Number of orbits in the file
 
-integer, parameter      :: iunit = 70                                                       ! Unit for the Pareto file
+    integer, parameter      :: iunit = 70                                                       ! Unit for the Pareto file
     
     integer, parameter      :: t_end_disc = 100                                             ! Parameterisation in backwards time
     integer, parameter      :: n_mnfd_disc = 360                                            ! Parameterisation around the orbit
@@ -51,6 +50,8 @@ integer, parameter      :: iunit = 70                                           
     contains
 
         subroutine variable_init()
+
+            call nice_printing()
 
             ! License key
 
@@ -69,11 +70,11 @@ integer, parameter      :: iunit = 70                                           
             ! Optimiser bounds
 
             XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            XL(2) = 1.D0 * 86400.D0                                                        ! Minimum transfer duration (seconds)
+            XL(2) = minimum_transfer_time                                                  ! Minimum transfer duration (seconds)
             XL(3) = 1                                                                      ! t_end
             XL(4) = 1                                                                      ! n_mnfd
             XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            XU(2) = 1500.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+            XU(2) = maximum_transfer_time                                                  ! Maximum transfer epoch (seconds)
             XU(3) = 100                                                                    ! t_end
             XU(4) = 360                                                                    ! n_mnfd
         
@@ -120,7 +121,7 @@ integer, parameter      :: iunit = 70                                           
             ! ////////////////////////////////////////////////////////////
 
             deallocate(dataset)
-            deallocate(perturbed_conds)
+            deallocate(perturbed_conds_dataset)
 
             ! Unload SPICE kernels
                     
@@ -150,11 +151,11 @@ integer, parameter      :: iunit = 70                                           
 
             ! Open file; set number of targets (== number of lines) to zero
 
-            write(*, '(A)', advance="no") "Determining number of lines..."
+            write(*, '(A)', advance="no") " Determining number of orbits in the data-file..."
             num_targets = 0
             open(97, file=datafile)
             open(98, file=original_orbit_data)
-            open(iunit, file="../data/paretoFront_"//targ_can)
+            open(iunit, file="../data/paretoFront1_"//targ_can)
 
             ! Read through in do-loop until EOF to determine number of lines
 
@@ -172,25 +173,27 @@ integer, parameter      :: iunit = 70                                           
 
             end do
 
-            write(*, '(A)') "done."
+            ! Move from number of targets -> number of orbits
+
+            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
+
+            write(*, *) "done."
+            print *, "Number of target points is ", num_targets
+            print *, "Number of orbits is ", num_orbits
+            print *, "Number of n_mnfd is ", n_mnfd_disc
+            print *, "Number of t_end is ",  t_end_disc
 
             ! Now we know the number of lines, rewind the file pointer and allocate the database
             ! file into memory (likely very large, so approach with caution on low-memory machines)
 
             rewind(97)
 
-            ! Move from number of targets -> number of orbits
-
-            num_targets = num_targets
-
-            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
-
-            allocate(dataset(t_end_disc, n_mnfd_disc, num_orbits, 6)) ! (t_end x n_mnfd x J x 6)
-            allocate(perturbed_conds(n_mnfd_disc, J, 7))         ! (n_mnfd x J x 7)
+            allocate(dataset(t_end_disc, n_mnfd_disc, num_orbits, 7))   ! (t_end x n_mnfd x J x 6)
+            allocate(perturbed_conds_dataset(n_mnfd_disc, num_orbits, 6))                ! (n_mnfd x J x 7)
 
             ! Now read the data into memory
 
-            write(*, '(A)', advance="no") "Reading dataset into memory..."
+            write(*, '(A)', advance="no") " Reading dataset into memory..."
 
             do k = 1, num_orbits
 
@@ -198,20 +201,17 @@ integer, parameter      :: iunit = 70                                           
 
                     do i = 1, t_end_disc
 
-                        read(97, *) dum, dataset(i, j, k, :) ! Dum == time
+                        read(97, *) dataset(i, j, k, :) ! Dum == time
 
                     end do ! i
 
-                    read(98) perturbed_conds(j, k, :) ! Dum == time
+                    read(98, *) perturbed_conds_dataset(j, k, :) ! Dum == time
 
                 end do ! j
 
             end do ! k
 
-            write(*, '(A, I8)') "done. Number of targets is", num_targets
-            print '(A, I8)', "Number of orbits is", num_orbits
-            print '(A, I8)', "Number of n_mnfd is", n_mnfd_disc
-            print '(A, I8)', "Number of t_end is",  t_end_disc
+            print *, "done."
 
             ! Close file; set is_loaded to true.
 
@@ -222,78 +222,31 @@ integer, parameter      :: iunit = 70                                           
 
         end subroutine load_data
 
-        subroutine get_pareto_front() 
+        subroutine nice_printing()
 
-            double precision    :: current_working_state(4)
-            double precision    :: final_velocity
+            print *, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
+            print *, " "
+            print *, "  WELCOME TO THE FORTRAN ASTEROID RETRIEVAL TOOL (FART)  "
+            print *, " "
+            print *, "                  Author: Jack Tyler                     "
+            print *, "              Email: jack.tyler@soton.ac.uk              "
+            print *, " "
+            print *, " This version last updated 2020-02-03                    "
+            print *, " "
+            print *, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
+            print *,
+            print *, "Parameters specified"
+            print *, "~~~~~~~~~~~~~~~~~~~~"
+            print *,
+            print *, "Input data-file: ", datafile
+            print *, "Original orbit data:", original_orbit_data
+            print *, "Target candidate: ", targ_can
+            print *,
+            print *, "Beginning run "
+            print *, "~~~~~~~~~~~~~ "
 
-            integer             :: orbit_choice
-            integer             :: pareto_solution
-            integer             :: variable_iter
-            integer             :: orbit_num
+        end subroutine nice_printing
 
-            double precision    :: r1(6)
-            double precision    :: v1(3)
-            double precision    :: r2(6)
-            double precision    :: v2(3)
-            double precision    :: target_point(6)
-            double precision    :: tmani
-
-            ! Get number of Pareto solutions
-
-            number_of_pareto_solutions = PF(1) ! First element stores the number of Pareto solutions
-
-            ! Now we know the number of Pareto solution, we can get the solutions
-
-            call write_pareto_head()
-
-            do pareto_solution = 1, number_of_pareto_solutions
-
-                final_velocity = PF(2 + O*(pareto_solution-1))
-
-                do variable_iter = 1, N
-
-                    current_working_state(variable_iter) = PF(2 + O * PARETOMAX + M * PARETOMAX + &
-                                                              n*(pareto_solution-1) + variable_iter - 1)
-
-                end do
-
-                call generate_ancillary_data(current_working_state(1), current_working_state(2), current_working_state(3), &
-                                             current_working_state(4), orbit_num, r1, v1, r2, v2, tmani, target_point)
-
-                call write_pareto_body(final_velocity, current_working_state, orbit_num, r1, v1, r2, v2, target_point, tmani)
-
-            end do
-
-        end subroutine get_pareto_front
-
-        subroutine write_pareto_head()
-
-            write(iunit, '(A)') "## Pareto front solution file "
-            write(iunit, '(A)') "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            write(iunit, '(A)') " "
-            write(iunit, '(A)') "deltaV \t t0 \t tt \t tend \t nmnfd \t J \t v1x v1y v1z [km/s] \t v2x v2y v2z [km/s] \t tmani [rS] \t xtarg [CR3BP]"
-
-        end subroutine write_pareto_head
-
-        subroutine write_pareto_body(final_velocity, current_working_state, orbit_num, v1, v2, target_point, tmani)
-
-            double precision, intent(in)    :: current_working_state(4)
-            double precision, intent(in)    :: final_velocity
-            double precision, intent(in)    :: tmani
-
-            integer, intent(in)             :: orbit_choice
-            integer, intent(in)             :: pareto_solution
-            integer, intent(in)             :: variable_iter
-            integer, intent(in)             :: orbit_num
-
-            double precision, intent(in)    :: v1(3)
-            double precision, intent(in)    :: v2(3)
-            double precision, intent(in)    :: target_point(6)
-            
-            write(iunit, *) final_velocity, current_working_state, orbit_choice, v1, v2, tmani, target_point
-
-        end subroutine write_pareto_body
 
 end module variable_initialisation
         

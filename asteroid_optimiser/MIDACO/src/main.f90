@@ -10,6 +10,7 @@ PROGRAM MAIN
     use state_determination                                                         ! Use the state determination routines
     use problem_parameters                                                          ! Problem set-up parameters
     use variable_initialisation
+    use ancillary_data
 
     implicit none
 
@@ -24,7 +25,7 @@ PROGRAM MAIN
     call midaco_print(1, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
                       XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
 
-    do while (optim_stop .eq. 0) 
+    do while (optim_stop .eq. 0 .and. PF(1) .lt. 100) 
 
         ! Evaluate objective function and constraints (none)
 
@@ -45,6 +46,12 @@ PROGRAM MAIN
     ! Print solution
 
     print *, "Solution X:", XOPT
+
+    ! Get the Pareto front...
+    
+    print *,  "Obtaining Pareto front..."
+
+    call get_pareto_front()
 
     ! Exit gracefully
 
