@@ -74,7 +74,7 @@ subroutine pre_filter()
     real(kind=dp)                               :: t1, t2, t3, t4, t5, date, o, Om, M, p                 ! Temporary variables
     real(kind=dp)                               :: ephemeris_time
 
-    character(len=260)                          :: bodystring                                            ! String of the body SPK ID (file IO), filepath for directory prefix
+    character(len=260)                          :: bodystring                                            ! String of the body SPK ID (file IO), OUTPUT_FILE for directory prefix
     character(len=8)                            :: fmt = '(I7.7)'                                        ! Formatting for result I/O
 
     ! Variable initialisations
@@ -94,9 +94,9 @@ subroutine pre_filter()
         call SPKEZR(bodyID, desireddate, 'ECLIPJ2000', 'NONE', 'Sun', asteroid_state, dum)
         call OSCELT(asteroid_state, desireddate, 1.d0, asteroid_elements)
 
-        a_b  = asteroid_elements(j,1)*au                                                                         ! a is non-dim: convert to km
-        e_b  = asteroid_elements(j,2)
-        in_b = asteroid_elements(j,3)
+        a_b  = asteroid_elements(1)*au                                                                         ! a is non-dim: convert to km
+        e_b  = asteroid_elements(2)
+        in_b = asteroid_elements(3)
 
         exitloop: do k = 1, num_targets
             
@@ -143,8 +143,6 @@ subroutine file_add(bodyID, unitnum, mindv, k)
 
     ! Subroutine intents
 
-    character(len=13)   :: filepath ! Define address of file to be read
-
     integer,        intent(in) :: bodyID
     integer,        intent(in) :: unitnum
     integer,        intent(in) :: k
@@ -153,19 +151,15 @@ subroutine file_add(bodyID, unitnum, mindv, k)
 
     logical                     :: exist
 
-    ! call where_from(k, outstring)
-
-    filepath = "results.txt"
-
-    inquire(file=filepath, exist=exist)
+    inquire(file=OUTPUT_FILE, exist=exist)
 
     if (exist) then
 
-      open(unitnum, file=filepath, status="old", position="append", action="write")
+      open(unitnum, file=OUTPUT_FILE, status="old", position="append", action="write")
 
     else
 
-      open(unitnum, file=filepath, status="new", action="write")
+      open(unitnum, file=OUTPUT_FILE, status="new", action="write")
 
     end if
 
@@ -182,16 +176,15 @@ end subroutine file_add
 
 subroutine file_check()
 
-    character(len=13) :: filepath
     logical           :: exist
 
-    filepath = 'results.txt'
+    OUTPUT_FILE = 'results.txt'
 
-    inquire(file=filepath, exist=exist)
+    inquire(file=OUTPUT_FILE, exist=exist)
 
     if (exist) then
 
-        open(20, file=filepath)
+        open(20, file=OUTPUT_FILE)
         close(20, status='delete')
 
     end if
@@ -214,7 +207,6 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
 
     real(kind=dp), intent(out)      :: cheap                ! Cheapest Hohmann transfer (km/s)
 
-    real(kind=dp)                   :: mu_s                 ! Solar graviational parameter (km ^ 2/s ^ 3)
     real(kind=dp)                   :: ra_b                 ! Radius of apoapsis of candidate (km)
     real(kind=dp)                   :: rp_b                 ! Radius of periapsis of candidate (km)
     real(kind=dp)                   :: ra_t                 ! Radius of apoaosis of target (km)
@@ -240,6 +232,9 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     a_t = rp_t / (1 - e_t)
     ra_t = a_t * (1 + e_t)
 
+    a_0 = a_b
+    a_f = a_t
+
     !
     ! There are four possible cases of transfers:
     !       1. Ap of body -> target apoapsis
@@ -252,19 +247,17 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     !
 
     !
-    ! Case 1, ap -> ap
+    ! Case 1, ap -> ap CHECKED
     !
 
     ! First, compute the intermediate and final semimajor axes
 
-    a_0 = a_b
     a_int = (ra_b + ra_t) / 2.
-    a_f = a_t
 
     ! Compute the velocity required to change the size of the apses
 
-    dV1 = sqrt( mu_s * (2/ra_b - 1/a_int) ) - sqrt( mu_s * (2/ra_b - 1/a_b) )
-    dV2 = sqrt( mu_s * (2/ra_t - 1/a_f) ) -   sqrt( mu_s * (2/ra_t - 1/a_int) )
+    dV1 = sqrt( mu * (2/ra_b - 1/a_int) ) - sqrt( mu * (2/ra_b - 1/a_b) )
+    dV2 = sqrt( mu * (2/ra_t - 1/a_f) ) -   sqrt( mu * (2/ra_t - 1/a_int) )
 
     !
     ! Now the inclination change: only do it at the point where it is cheapest
@@ -273,13 +266,13 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     if (ra_t > ra_b) then  ! If ra_t is larger, then it's better to do the inclination change post-apside change
 
         rstar = ra_b / ra_t
-        dVi = 2 * sqrt( (mu_s/a_int) * rstar ) * sin( abs( in_t - in_b ) / 2.0 )
+        dVi = 2 * sqrt( (mu/a_int) * rstar ) * sin( abs( in_t - in_b ) / 2.0 )
         v1 = abs(dV1) + sqrt(dVi ** 2 + dV2 ** 2)
 
     else
 
         rstar = ra_t / ra_b
-        dVi = 2 * sqrt( (mu_s/a_int) * rstar) * sin( abs(in_t - in_b) / 2.0 )
+        dVi = 2 * sqrt( (mu/a_int) * rstar) * sin( abs(in_t - in_b) / 2.0 )
         v1 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
 
     end if
@@ -294,8 +287,8 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
 
     ! Compute the velocity required to change the size of the apses
 
-    dV1 = sqrt(mu_s * (2/ra_b - 1/a_int)) - sqrt(mu_s * (2/ra_b - 1/a_b))
-    dV2 = sqrt(mu_s * (2/rp_t - 1/a_f)) - sqrt(mu_s * (2/rp_t - 1/a_int))
+    dV1 = sqrt(mu * (2/ra_b - 1/a_int)) - sqrt(mu * (2/ra_b - 1/a_b))
+    dV2 = sqrt(mu * (2/rp_t - 1/a_f)) - sqrt(mu * (2/rp_t - 1/a_int))
 
     !
     ! Now the inclination change: only do it at the point where it is cheapest
@@ -304,13 +297,13 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     if (rp_t > ra_b) then  ! If ra_b is larger, then it's better to do the inclination change post-apside change
 
         rstar = ra_b / rp_t
-        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
         v2 = abs(dV1) + sqrt(dV2 ** 2 + dVi **2)
 
     else
 
         rstar = rp_t/ra_b
-        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
         v2 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
 
     end if
@@ -327,8 +320,8 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
 
     ! Compute the velocity required to change the size of the apses
 
-    dV1 = sqrt(mu_s * (2/rp_b - 1/a_int)) - sqrt(mu_s * (2/rp_b - 1/a_b))
-    dV2 = sqrt(mu_s * (2/ra_t - 1/a_f)) - sqrt(mu_s * (2/ra_t - 1/a_int))
+    dV1 = sqrt(mu * (2/rp_b - 1/a_int)) - sqrt(mu * (2/rp_b - 1/a_b))
+    dV2 = sqrt(mu * (2/ra_t - 1/a_f)) - sqrt(mu * (2/ra_t - 1/a_int))
 
     !
     ! Now the inclination change: only do it at the point where it is cheapest
@@ -337,13 +330,13 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     if (ra_t > rp_b) then  ! If ra_t is larger, then it's better to do the inclination change post-apside change
 
         rstar = rp_b / ra_t
-        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
+        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
         v3 = abs(dV1) + sqrt(dV2 ** 2 + dVi ** 2)
 
     else
 
         rstar = ra_t/rp_b
-        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
+        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
         v3 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
 
     end if
@@ -358,8 +351,8 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
 
     ! Compute the velocity required to change the size of the apses
 
-    dV1 = sqrt(mu_s * (2/rp_b - 1/a_int)) - sqrt(mu_s * (2/rp_b - 1/a_b))
-    dV2 = sqrt(mu_s * (2/rp_t - 1/a_f)) - sqrt(mu_s * (2/rp_t - 1/a_int))
+    dV1 = sqrt(mu * (2/rp_b - 1/a_int)) - sqrt(mu * (2/rp_b - 1/a_b))
+    dV2 = sqrt(mu * (2/rp_t - 1/a_f)) - sqrt(mu * (2/rp_t - 1/a_int))
 
     !
     ! Now the inclination change: only do it at the point where it is cheapest
@@ -368,13 +361,13 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     if (rp_t > rp_b) then  ! If ra_b is larger, then it's better to do the inclination change post-apside change
 
         rstar = rp_b / rp_t
-        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
         v4 = abs(dV1) + sqrt(dV2 ** 2 + dVi ** 2)
 
     else
 
         rstar = rp_t / rp_b
-        dVi = 2 * sqrt((mu_s/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
+        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
         v4 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
 
     end if

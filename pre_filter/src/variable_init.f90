@@ -9,6 +9,8 @@ module variable_init
     integer, allocatable                        :: database(:)                                           ! SPK ID Database
     integer                                     :: candidate_count = 0                                   ! Number of candidates found
     integer                                     :: itercount = 0                                         ! Main loop sentinel
+    integer                                     :: num_lines = 0
+    integer                                     :: num_targets = 0
 
     real(kind=dp), allocatable                  :: target_state(:,:)                                     ! [r, v] of the target states
     real(kind=dp), allocatable                  :: target_elements(:,:)                                  ! [a, e, i, O, o, M, t] of the target states
@@ -28,8 +30,6 @@ module variable_init
             implicit none
 
             integer                             :: iostate
-            integer                             :: num_lines   = 0                                             ! Number of lines in the file
-            integer                             :: num_targets = 0
             integer                             :: i
 
 
