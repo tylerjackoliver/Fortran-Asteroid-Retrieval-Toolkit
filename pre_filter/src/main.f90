@@ -92,7 +92,7 @@ subroutine pre_filter()
 
         call FURNSH(candidate_ephem_prefix//bodyID//'.bsp')
         call SPKEZR(bodyID, desireddate, 'ECLIPJ2000', 'NONE', 'Sun', asteroid_state, dum)
-        call OSCELT(asteroid_state, desireddate, 1.d0, asteroid_elements)
+        call OSCELT(asteroid_state, desireddate, mu, asteroid_elements)
 
         a_b  = asteroid_elements(1)*au                                                                         ! a is non-dim: convert to km
         e_b  = asteroid_elements(2)
