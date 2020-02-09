@@ -94,7 +94,7 @@ subroutine pre_filter()
         call SPKEZR(bodyID, desireddate, 'ECLIPJ2000', 'NONE', 'Sun', asteroid_state, dum)
         call OSCELT(asteroid_state, desireddate, mu, asteroid_elements)
 
-        a_b  = asteroid_elements(1)*au                                                                         ! a is non-dim: convert to km
+        a_b  = asteroid_elements(1)                                                                            ! a is non-dim: convert to km
         e_b  = asteroid_elements(2)
         in_b = asteroid_elements(3)
 
@@ -192,14 +192,68 @@ subroutine file_check()
 end subroutine file_check
 
 
+subroutine get_transfer_velocity(a_0, a_f, r_t, r_b, in_t, in_b, transfer_vel)
+
+    use precision
+    use constants
+    
+    implicit none
+    
+    real(kind=dp), intent(in)       :: a_0                              ! Initial SMA  (km)
+    real(kind=dp), intent(in)       :: a_f                              ! Final SMA (km)
+    real(kind=dp), intent(in)       :: r_t                              ! Target initial radius (km)
+    real(kind=dp), intent(in)       :: r_b                              ! Candidate initial radius(km)
+    real(kind=dp), intent(in)       :: in_t                             ! Inclination of the target (rad)
+    real(kind=dp), intent(in)       :: in_b                             ! Inclination of the candidate (rad)
+    
+    real(kind=dp), intent(out)      :: transfer_vel                     ! Transfer velocity (km/s)
+    
+    real(kind=dp)                   :: rstar                            ! Quotient for inclination change calculation
+    real(kind=dp)                   :: dVi                              ! Velocity required for inclination change (km/s)
+    real(kind=dp)                   :: dV1                              ! Velocity required for first Hohmann maneouvre (km/s)
+    real(kind=dp)                   :: dV2                              ! Velocity required for second Hohmann maneouvre (km/s)
+
+    
+    ! First, compute the intermediate and final semimajor axes
+
+    a_int = (r_t + r_b) / 2.
+
+    ! Compute the velocity required to change the size of the apses
+
+    dV1 = sqrt( mu * (2/r_b - 1/a_int) ) - sqrt( mu * (2/r_b - 1/a_b) )
+    dV2 = sqrt( mu * (2/r_t - 1/a_f) ) -   sqrt( mu * (2/r_t - 1/a_int) )
+
+    !
+    ! Now the inclination change: only do it at the point where it is cheapest
+    !
+
+    if (r_t > r_b) then  ! If r_t is larger, then it's better to do the inclination change post-apside change
+
+        rstar = r_b / r_t
+        dVi = 2 * sqrt( (mu/a_int) * rstar ) * sin( abs( in_t - in_b ) / 2.0 )
+        transfer_vel = abs(dV1) + sqrt(dVi ** 2 + dV2 ** 2)
+
+    else
+
+        rstar = r_t / r_b
+        dVi = 2 * sqrt( (mu/a_int) * rstar) * sin( abs(in_t - in_b) / 2.0 )
+        transfer_vel = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
+
+    end if
+
+end subroutine get_transfer_velocity
+
+
 subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
+
+    implicit none
 
     use precision
     use constants
 
     real(kind=dp), intent(in)       :: a_b                  ! SMA of the candidate (km)
     real(kind=dp), intent(in)       :: e_b                  ! Eccentricity of the candidate
-    real(kind=dp), intent(in)       :: in_b                  ! Inclination of the candiate (rad)
+    real(kind=dp), intent(in)       :: in_b                 ! Inclination of the candiate (rad)
     real(kind=dp), intent(in)       :: rp_t                 ! Radius of periapsis of the target (km)
     real(kind=dp), intent(in)       :: e_t                  ! Eccentricity of the target
     real(kind=dp), intent(in)       :: in_t                 ! Inclination of the target (rad)
@@ -212,17 +266,11 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     real(kind=dp)                   :: ra_t                 ! Radius of apoaosis of target (km)
     real(kind=dp)                   :: a_t                  ! SMA of target (km)
     real(kind=dp)                   :: a_int                ! SMA of intermediate transfer arc (km)
-    real(kind=dp)                   :: a_f                  ! Equivalent SMA of target (doesn't real(kind=dp)ly exist)
-    real(kind=dp)                   :: rstar                ! Quotient for inclination change calculation
-    real(kind=dp)                   :: dVi                  ! Velocity required for inclination change (km/s)
-    real(kind=dp)                   :: dV1                  ! Velocity required for first Hohmann maneouvre (km/s)
-    real(kind=dp)                   :: dV2                  ! Velocity required for second Hohmann maneouvre (km/s)
+    real(kind=dp)                   :: a_f                  ! Equivalent SMA of target (doesn't really exist)
     real(kind=dp)                   :: v1                   ! Total velocity required for first maneouvre (km/s)
     real(kind=dp)                   :: v2                   ! Total velocity required for second maneouvre (km/s)
     real(kind=dp)                   :: v3                   ! Total velocity required for first maneouvre (km/s)
     real(kind=dp)                   :: v4                   ! Total velocity required for second maneouvre (km/s)
-
-    double precision                :: pi = 4.*datan(1.d0)
 
     ! First, Compute apoapsis and periapsis distance for the body
     
@@ -247,131 +295,29 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     !
 
     !
-    ! Case 1, ap -> ap CHECKED
+    ! Case 1, ap -> ap (ra_b + ra_t)
     !
 
-    ! First, compute the intermediate and final semimajor axes
-
-    a_int = (ra_b + ra_t) / 2.
-
-    ! Compute the velocity required to change the size of the apses
-
-    dV1 = sqrt( mu * (2/ra_b - 1/a_int) ) - sqrt( mu * (2/ra_b - 1/a_b) )
-    dV2 = sqrt( mu * (2/ra_t - 1/a_f) ) -   sqrt( mu * (2/ra_t - 1/a_int) )
-
+    call get_transfer_velocity(a_0, a_f, ra_t, ra_b, in_t, in_b, v1)
+    
     !
-    ! Now the inclination change: only do it at the point where it is cheapest
+    ! Case 2, ap -> peri (ra_b + rp_t)
     !
 
-    if (ra_t > ra_b) then  ! If ra_t is larger, then it's better to do the inclination change post-apside change
-
-        rstar = ra_b / ra_t
-        dVi = 2 * sqrt( (mu/a_int) * rstar ) * sin( abs( in_t - in_b ) / 2.0 )
-        v1 = abs(dV1) + sqrt(dVi ** 2 + dV2 ** 2)
-
-    else
-
-        rstar = ra_t / ra_b
-        dVi = 2 * sqrt( (mu/a_int) * rstar) * sin( abs(in_t - in_b) / 2.0 )
-        v1 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
-
-    end if
+    call get_transfer_velocity(a_0, a_f, ra_b, rp_t, in_t, in_b, v2)
 
     !
-    ! Case 2, ap -> peri
+    ! Case 3, peri -> ap (rp_b + ra_t)
     !
 
-    ! Update the intermediate SMA
-
-    a_int = (ra_b + rp_t) / 2.
-
-    ! Compute the velocity required to change the size of the apses
-
-    dV1 = sqrt(mu * (2/ra_b - 1/a_int)) - sqrt(mu * (2/ra_b - 1/a_b))
-    dV2 = sqrt(mu * (2/rp_t - 1/a_f)) - sqrt(mu * (2/rp_t - 1/a_int))
+    call get_transfer_velocity(a_0, a_f, rp_b, ra_t, in_t, in_b, v3)
 
     !
-    ! Now the inclination change: only do it at the point where it is cheapest
+    ! Case 4, peri -> peri (rp_b + rp_t)
     !
 
-    if (rp_t > ra_b) then  ! If ra_b is larger, then it's better to do the inclination change post-apside change
-
-        rstar = ra_b / rp_t
-        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
-        v2 = abs(dV1) + sqrt(dV2 ** 2 + dVi **2)
-
-    else
-
-        rstar = rp_t/ra_b
-        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
-        v2 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
-
-    end if
-
-    !
-    ! Case 3, peri -> ap
-    !
-
-    ! First, compute the intermediate and final semimajor axes
-
-    a_0 = a_b
-    a_int = (rp_b + ra_t) / 2.
-    a_f = a_t
-
-    ! Compute the velocity required to change the size of the apses
-
-    dV1 = sqrt(mu * (2/rp_b - 1/a_int)) - sqrt(mu * (2/rp_b - 1/a_b))
-    dV2 = sqrt(mu * (2/ra_t - 1/a_f)) - sqrt(mu * (2/ra_t - 1/a_int))
-
-    !
-    ! Now the inclination change: only do it at the point where it is cheapest
-    !
-
-    if (ra_t > rp_b) then  ! If ra_t is larger, then it's better to do the inclination change post-apside change
-
-        rstar = rp_b / ra_t
-        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
-        v3 = abs(dV1) + sqrt(dV2 ** 2 + dVi ** 2)
-
-    else
-
-        rstar = ra_t/rp_b
-        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.0)
-        v3 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
-
-    end if
-
-    !
-    ! Case 4, peri -> peri
-    !
-
-    ! Update the intermediate SMA
-
-    a_int = (rp_b + rp_t) / 2.
-
-    ! Compute the velocity required to change the size of the apses
-
-    dV1 = sqrt(mu * (2/rp_b - 1/a_int)) - sqrt(mu * (2/rp_b - 1/a_b))
-    dV2 = sqrt(mu * (2/rp_t - 1/a_f)) - sqrt(mu * (2/rp_t - 1/a_int))
-
-    !
-    ! Now the inclination change: only do it at the point where it is cheapest
-    !
-
-    if (rp_t > rp_b) then  ! If ra_b is larger, then it's better to do the inclination change post-apside change
-
-        rstar = rp_b / rp_t
-        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
-        v4 = abs(dV1) + sqrt(dV2 ** 2 + dVi ** 2)
-
-    else
-
-        rstar = rp_t / rp_b
-        dVi = 2 * sqrt((mu/a_int) * rstar) * sin(abs(in_t - in_b)/2.)
-        v4 = sqrt(dV1 ** 2 + dVi ** 2) + abs(dV2)
-
-    end if
-
+    call get_transfer_velocity(a_0, a_f, rp_b, rp_t, in_t, in_b, v4)
+    
     cheap = min(v1, v2, v3, v4)
 
 end subroutine cheapest
