@@ -243,6 +243,63 @@ module variable_initialisation
 
         end subroutine variable_init
 
+        subroutine intermediate_variable_destruct()
+
+            call UNLOAD('../data/'//targ_can//'.bsp')
+
+        end subroutine intermediate_variable_destruct
+
+        subroutine intermediate_variable_init()
+
+            call FURNSH('../data/'//targ_can//'.bsp')
+
+            ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
+
+            call GET_STATE(targ_can, time_lower, time_upper)
+
+            ! Optimiser bounds
+
+            XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
+            XL(2) = 1.D0 * 86400.D0                                                        ! Minimum transfer duration (seconds)
+            XL(3) = 1                                                                      ! t_end
+            XL(4) = 1                                                                      ! n_mnfd
+            XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
+            XU(2) = 1500.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+            XU(3) = 100                                                                    ! t_end
+            XU(4) = 360                                                                    ! n_mnfd
+        
+            ! Starting point, XOPT
+
+            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, 2.d0, 90.d0/) ! EXACT MIDDLE OF THE SET
+
+            ! Maximum function evaluations
+
+            max_eval = 99999999
+            max_time = 60 * 60 * 24 * 1 ! 2 days
+
+            ! Printing options
+
+            print_eval = 100
+            save_to_file = 0 ! Save solution to text files
+
+            ! Choose MIDACO parameters (FOR ADVANCED USERS)
+
+            PARAM( 1) = 0.0D0       ! ACCURACY
+            PARAM( 2) = 0.0D0       ! SEED
+            PARAM( 3) = 0.0D0       ! FSTOP
+            PARAM( 4) = 0.0D0       ! ALGOSTOP
+            PARAM( 5) = 0.0D0       ! EVALSTOP
+            PARAM( 6) = 0.D0       ! FOCUS
+            PARAM( 7) = 0.0D0       ! ANTS
+            PARAM( 8) = 0.0D0       ! KERNEL
+            PARAM( 9) = 0.0D0       ! ORACLE
+            PARAM(10) = 100000D0      ! PARETOMAX
+            PARAM(11) = 0.000001D0   ! EPSILON  
+            PARAM(12) = -1.000D0     ! BALANCE => focus only on first objective function (DeltaV, not tt)
+            PARAM(13) = 0.0D0       ! CHARACTER 
+
+        end subroutine intermediate_variable_init
+
         subroutine mpi_variable_destruct()
 
             ! ////////////////////////////////////////////////////////////

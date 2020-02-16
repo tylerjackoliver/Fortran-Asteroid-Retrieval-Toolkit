@@ -24,8 +24,12 @@ PROGRAM MAIN
     do target_count = 1, size(targ_can_array)
 
         write(targ_can, '(A10)'), targ_can_array(target_count)
+
+        if (target_count .ne. 1) call intermediate_variable_init()
+
         call run_optim()
         call get_pareto_front()
+        call intermediate_variable_destruct()
         print *, "Core ID", MPI_ID, "is switching."
 
     end do
