@@ -267,7 +267,7 @@ module state_determination
                 double precision               :: cang
                 double precision               :: sang 
                 
-                double precision, parameter    :: mu3bp = 3.003458d-06
+                double precision, parameter    :: mu3bp = 3.0032080443d-06
 
                 ! Get total angle - OK to make large as cos/sin functions will modulo 2pi the answer
 
@@ -333,7 +333,7 @@ module state_determination
                 double precision               :: cang
                 double precision               :: sang 
                 
-                double precision, parameter    :: mu3bp = 3.003458433d-06
+                double precision, parameter    :: mu3bp = 3.0032080443d-06
 
                 ! Get total angle - OK to make large as cos/sin functions will modulo 2pi the answer
 
