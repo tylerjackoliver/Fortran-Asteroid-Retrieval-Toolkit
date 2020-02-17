@@ -10,62 +10,54 @@ PROGRAM MAIN
     use state_determination                                                         ! Use the state determination routines
     use problem_parameters                                                          ! Problem set-up parameters
     use variable_initialisation
+    use ancillary_data
 
     implicit none
 
-    integer :: target_count
-
     ! Load variables into memory
 
-    call MPI_VARIABLE_INIT()
+    call VARIABLE_INIT()
 
-    ! Perform the chunk of our work for the dataset
+    ! Call the optimiser
 
-    do target_count = 1, size(targ_can_array)
+    ! Print header
 
-        write(targ_can, '(A10)'), targ_can_array(target_count)
+    call midaco_print(1, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
+                      XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
 
-        if (target_count .ne. 1) call intermediate_variable_init()
+    do while (optim_stop .eq. 0 .and. PF(1) .lt. 12) 
 
-        call run_optim()
-        call get_pareto_front()
-        call intermediate_variable_destruct()
-        print *, "Core ID", MPI_ID, "is switching."
+        ! Evaluate objective function and constraints (none)
+
+        call problem_function(f, xopt)
+
+        ! Call MIDACO
+
+        call midaco(1, O, N, NI, M, ME, XOPT, F, G, XL, XU, optim_flag, optim_stop, &
+                    param, rw, lrw, iw, liw, pf, lpf, key)
+
+        ! Print again
+
+        call midaco_print(2, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
+        XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
 
     end do
+
+    ! Print solution
+
+    print *, "Solution X:", XOPT
+
+    ! Get the Pareto front...
+    
+    print *,  "Obtaining Pareto front..."
+
+    call get_pareto_front()
 
     ! Exit gracefully
 
-    call MPI_VARIABLE_DESTRUCT()
+    call VARIABLE_DESTRUCT()
 
 END
-
-    subroutine run_optim()
-
-        ! Print header
-
-        call midaco_print(1, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
-                        XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
-
-        do while (optim_stop .eq. 0) 
-
-            ! Evaluate objective function and constraints (none)
-
-            call problem_function(f, xopt)
-
-            ! Call MIDACO
-
-            call midaco(1, O, N, NI, M, ME, XOPT, F, G, XL, XU, optim_flag, optim_stop, &
-                        param, rw, lrw, iw, liw, pf, lpf, key)
-
-            ! Print again
-
-            call midaco_print(2, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
-            XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
-
-    end do
-
-    end subroutine run_optim
 
     subroutine problem_function(F, X)
 
@@ -115,31 +107,32 @@ END
         implicit none
 
         double precision		                                :: x(4)                         ! Input state vector
-        double precision                                      :: state_can(6)                 ! Asteroid candidate state
+        double precision                                        :: state_can(6)                 ! Asteroid candidate state
         double precision		                                :: state_targ(6)                ! Un-rotated target state
+        double precision                                        :: state_dim(6)
         double precision		                                :: state_rot(6)                 ! Rotated target state
-        double precision                                      :: transfer_epoch               ! Epoch of transfer
+        double precision                                        :: transfer_epoch               ! Epoch of transfer
         double precision		                                :: tt 							! Transfer time
-        double precision                                      :: t_end                        ! Desired backwards integration time
-        double precision                                      :: n_mnfd                       ! Desired point along the orbit
+        double precision                                        :: t_end                        ! Desired backwards integration time
+        double precision                                        :: n_mnfd                       ! Desired point along the orbit
         double precision		                                :: vx1, vx2, vy1, vy2, vz1, vz2 ! Velocities of the beginning and end of the Lambert arc
         double precision		                                :: vtx, vty, vtz, vcx, vcy, vcz ! Velocities of the candidate and target at beginning and end of ""
         double precision	                                    :: transfer_v1, transfer_v2     ! Departure velocity of Lambert transfer, insertion velocity of Lambert transfer
         double precision		                                :: transfer_vel                 ! Transfer velocities
         double precision		                                :: min_vel                      ! Minimum velocity transfer
 
-        logical                                     :: long_way						! Which direction for the Lambert transfer
-        logical                                     :: run_ok                       ! Boolean success variable for the Lambert
+        logical                                                 :: long_way						! Which direction for the Lambert transfer
+        logical                                                 :: run_ok                       ! Boolean success variable for the Lambert
 
-        double precision, allocatable, dimension(:, :)        :: v1                           ! Velocity of beginning of Lambert arc
-        double precision, allocatable, dimension(:, :)        :: v2                           ! Velocity of the end of the Lambert arc
+        double precision, allocatable, dimension(:, :)          :: v1                           ! Velocity of beginning of Lambert arc
+        double precision, allocatable, dimension(:, :)          :: v2                           ! Velocity of the end of the Lambert arc
 
-        integer		                                :: multi_rev = 4                ! Number of Lambert arc revolutions (up to)
-        integer 	                                :: num_rows                     ! Size of the v1, v2 arrays
-        integer 	                                :: j                            ! Loop sentinels
-        integer                                     :: best_index                   ! Best index of target state
-        integer                                     :: itercount = 0                ! Iteration counter
-        integer                                     :: orbit_choice                 ! The orbit we're using - bruting over this
+        integer		                                            :: multi_rev = 4                ! Number of Lambert arc revolutions (up to)
+        integer 	                                            :: num_rows                     ! Size of the v1, v2 arrays
+        integer 	                                            :: j                            ! Loop sentinels
+        integer                                                 :: best_index                   ! Best index of target state
+        integer                                                 :: itercount = 0                ! Iteration counter
+        integer                                                 :: orbit_choice                 ! The orbit we're using - bruting over this
 
         ! Initialise variables from input vector
 
@@ -171,9 +164,18 @@ END
 
             call BSPLINE_INTERPOLATE(t_end, n_mnfd, orbit_choice, state_targ)
 
+            ! Rotate into the synodic frame
+
+            call GLOBAL_ROTATE(state_targ, transfer_epoch, state_dim)
+
+            ! Dimensionalise
+
+            state_dim(1:3) = state_dim(1:3) * au
+            state_dim(4:6) = state_dim(4:6) * au * 2.d0 * 4.d0 * datan(1.d0)/ (86400.d0 * 365.25d0)
+
             ! Rotate the state above via the relations in sanchez et. al.
 
-            call ROTATOR(state_targ, transfer_epoch, tt, state_rot)
+            call ROTATOR(state_dim, transfer_epoch, tt, state_rot)
 
             ! Define initial and final velocities of the target and of
             ! the candidate
@@ -193,6 +195,8 @@ END
             ! TODO: Make this a function
 
             long_way = .false.
+
+            ! print *, state_rot
 
             call solve_lambert_izzo(state_can(1:3), state_rot(1:3), tt, mu, long_way, multi_rev, v1, v2, run_ok)
 
