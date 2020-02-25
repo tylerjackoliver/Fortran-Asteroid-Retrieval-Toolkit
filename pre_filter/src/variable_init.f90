@@ -12,12 +12,6 @@ module variable_init
     integer                                     :: num_lines = 0
     integer                                     :: num_targets = 0
 
-    real(kind=dp), allocatable                  :: target_state(:,:)                                     ! [r, v] of the target states
-    real(kind=dp), allocatable                  :: target_elements(:,:)                                  ! [a, e, i, O, o, M, t] of the target states
-    real(kind=dp), allocatable                  :: manifold_data_elements(:,:)                           ! num_targets x 6
-    real(kind=dp), allocatable                  :: asteroid_elements(8)                                  ! Orbital elements of the asteroid
-    real(kind=dp), allocatable                  :: asteroid_state(6)                                     ! State of the asteroid
-
     real(kind=dp)                               :: dum                                                   ! Dummy variable
 
     contains

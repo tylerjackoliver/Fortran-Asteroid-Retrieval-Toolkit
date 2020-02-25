@@ -35,7 +35,6 @@
 
 program main
 
-    use omp_lib
     use constants                                                                                        ! Standardises constants for use in all Fortran codes
     use problem_parameters
     use variable_init
@@ -59,11 +58,13 @@ subroutine pre_filter()
 
     integer                                     :: i, j, k                                               ! Loop variables 
     integer                                     :: bodyID                                                ! SPK ID of the body being investigated
-    integer                                     :: desireddate                                           ! Week ID to compute the solution for
+    integer                                     :: week_id                                               ! Week ID to compute the solution for
                                                                                                          ! For use on Lyceum, the input was parameterised by date. At higher core counts,
                                                                                                          ! It becomes feasible to do all dates at once.
+    integer                                     :: file_unit
 
-    real(kind=dp)                               :: a_b                                                   ! SMA of body
+    real(kind=dp)                               :: rp_b                                                  ! SMA of body
+    real(kind=dp)                               :: a_b
     real(kind=dp)                               :: e_b                                                   ! Eccentricity of body 
     real(kind=dp)                               :: in_b                                                  ! Inclination of body (rad!!)
     real(kind=dp)                               :: rp_t                                                  ! Periapse radius of target
@@ -72,16 +73,27 @@ subroutine pre_filter()
     
     real(kind=dp)                               :: mindV                                                 ! minimum delta V
     real(kind=dp)                               :: t1, t2, t3, t4, t5, date, o, Om, M, p                 ! Temporary variables
-    real(kind=dp)                               :: ephemeris_time
+    real(kind=dp)                               :: epoch
 
     character(len=260)                          :: bodystring                                            ! String of the body SPK ID (file IO), OUTPUT_FILE for directory prefix
     character(len=8)                            :: fmt = '(I7.7)'                                        ! Formatting for result I/O
+    character(len=30)                           :: week_string
 
     ! Variable initialisations
 
     ! Generate the orbital elements of the candidate at the desired time
 
-    call getarg(1, desireddate)                                                                          ! Ephemeris seconds
+    call getarg(1, week_id)  
+    write(week_string, *) week_id                                                                        ! Ephemeris seconds
+
+    ! String version of week ID for determining file
+
+    call(week_id, epoch)
+
+    ! Open the results file for this week
+
+    file_unit = 150 + mpi_id_world
+    open(unit=file_unit, file='../results/week_'//trim(week_string))
 
     do i = 1, num_targets ! All bodies
 
@@ -90,11 +102,12 @@ subroutine pre_filter()
         bodyID = database(i)
         write(bodystring, *) bodyID
 
-        call FURNSH(candidate_ephem_prefix//bodyID//'.bsp')
-        call SPKEZR(bodyID, desireddate, 'ECLIPJ2000', 'NONE', 'Sun', asteroid_state, dum)
-        call OSCELT(asteroid_state, desireddate, mu, asteroid_elements)
+        call FURNSH(candidate_ephem_prefix//trim(bodyID)//'.bsp')
+        call SPKEZR(bodyID, epoch, 'ECLIPJ2000', 'NONE', 'Sun', asteroid_state, dum)
+        call OSCELT(asteroid_state, epoch, mu, asteroid_elements)
 
-        a_b  = asteroid_elements(1)                                                                            ! a is non-dim: convert to km
+        rp_b = asteroid_elements(1)
+        a_b  = rp_b / (1.d0 - e_b)                                                                            ! a is non-dim: convert to km
         e_b  = asteroid_elements(2)
         in_b = asteroid_elements(3)
 
@@ -106,9 +119,9 @@ subroutine pre_filter()
 
             call cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, mindV)                                               ! Compute if we have any possible transfers
 
-            if (mindV < .7) then 
+            if (mindV < .7d0) then
 
-                call file_add(bodyID, unitno, mindV, k)                                                         ! Open results file, add the SPK ID in, and close again
+                call file_add(bodyID, file_unit, mindV, k)                                                         ! Open results file, add the SPK ID in, and close again
                 candidate_count = candidate_count + 1
                 exit exitloop                                                                                   ! If we have a candidate, then we don't care about any other transfer opportunities; stop.
 
@@ -116,14 +129,14 @@ subroutine pre_filter()
 
         end do
 
-        if (mod(i, 10000) .eq. 0) then
+        if (mod(i, 1000) .eq. 0) then
 
             write(*,*) "Completed processing object number ", i
             write(*,*) "Candidates found: ", candidate_count
 
         end if
 
-        call UNLOAD(candidate_ephem_prefix//bodyID//'.bsp')
+        call UNLOAD(candidate_ephem_prefix//trim(bodyID)//'.bsp')
 
     end do
 
@@ -131,6 +144,8 @@ subroutine pre_filter()
     write(*,*) "Objects scanned: ", itercount
     write(*,*) "Candidates found: ", candidate_count
     write(*,*) "Compute time: ", finish-start, "seconds."
+
+    close(file_unit)
 
 end subroutine pre_filter
 
@@ -150,20 +165,6 @@ subroutine file_add(bodyID, unitnum, mindv, k)
     real(kind=dp),  intent(in) :: mindv
 
     logical                     :: exist
-
-    inquire(file=OUTPUT_FILE, exist=exist)
-
-    if (exist) then
-
-      open(unitnum, file=OUTPUT_FILE, status="old", position="append", action="write")
-
-    else
-
-      open(unitnum, file=OUTPUT_FILE, status="new", action="write")
-
-    end if
-
-    ! Write the body, the mindv, and the family (bounds)
 
     write(unitnum, *) bodyID, mindv
     close(unitnum)
@@ -321,3 +322,19 @@ subroutine cheapest(a_b, e_b, in_b, rp_t, e_t, in_t, M_t, cheap)
     cheap = min(v1, v2, v3, v4)
 
 end subroutine cheapest
+
+subroutine week_to_time(week, time)
+
+    integer, intent(in)             :: week                 ! Integer ID of week being studied
+
+    double precision, intent(out)   :: time                 ! Ephemeris time of week being studied
+
+    double precision                :: baseline_time
+
+    call FURNSH('../data/naif0008.tls')
+
+    call STR2ET('Jan 1, 2025 00:00', baseline_time)         ! Baseline time
+
+    time = baseline_time + week * 86400.d0 * 7.d0
+
+end subroutine week_to_time
