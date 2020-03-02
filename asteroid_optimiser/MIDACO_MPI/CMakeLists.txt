@@ -8,9 +8,6 @@ project (ast_optim)
 include_directories(${CMAKE_BINARY_DIR}/../mod/)
 link_directories(${CMAKE_BINARY_DIR}/../lib/)
 
-set (CMAKE_fortran_COMPILER "gfortran")
-set (CMAKE_C_COMPILER "gcc")
-set (CMAKE_CXX_COMPILER "g++")
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 #>> Source Code
@@ -26,11 +23,26 @@ add_executable (ast_optim
                 src/compute_spline.f90
                 src/variable_initialisation.f90
                 src/midaco.f
+                src/ancillary_data.f90
+		src/mpi_variables.f90
 )
 
 #>> Compilation Options
 
-target_compile_options (ast_optim PUBLIC "-Wall")
-target_compile_options (ast_optim PUBLIC "-O2") 				                        # Optimization level -O2
-target_compile_options (ast_optim PUBLIC "-Wno-tabs")
+## GNU OPTIONS
+#	target_compile_options (ast_optim PUBLIC "-Wall")
+#	target_compile_options (ast_optim PUBLIC "-O2") 				                        # Optimization level -O2
+#	target_compile_options (ast_optim PUBLIC "-cpp")
+#	target_compile_options (ast_optim PUBLIC "-DDEBUG")
+#	target_compile_options (ast_optim PUBLIC "-Wno-tabs")
+
+
+## IFORT OPTIONS
+target_compile_options (ast_optim PUBLIC "-warn")
+#target_compile_options (ast_optim PUBLIC -check all)
+target_compile_options (ast_optim PUBLIC "-O2")
+target_compile_options (ast_optim PUBLIC "-fpp") # Enable pre-processor
+target_compile_options (ast_optim PUBLIC "-DDEBUG")
+target_compile_options (ast_optim PUBLIC "-check all, noarg_temp_created")
+
 target_link_libraries(ast_optim PUBLIC fat spice bspline-fortran)                               # Link the libraries

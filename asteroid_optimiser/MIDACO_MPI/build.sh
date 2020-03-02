@@ -1,9 +1,9 @@
 mkdir build bin
 cd build
-FC=gfortran cmake ..
+FC=mpif90 cmake ..
 make
 cd ..
 cp data/*.bsp bin/
 cp data/*.tls bin/
-cd bin/ &&  ./ast_optim
+cd bin/ && mpirun -np 1 ./ast_optim
 

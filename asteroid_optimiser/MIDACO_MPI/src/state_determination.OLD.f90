@@ -33,37 +33,35 @@ module state_determination
 
                 use precision_kinds
                 use constants
-                use mpi_f08
 
                 implicit none
 
-                double precision                :: epoch                                    ! Epoch: start time
-                double precision                :: epoch_counter                            ! Epoch loop variable
-                double precision                :: ang_can                                  ! Angle of the candidate with respect to the Sun
-                double precision                :: tau_can                                  ! Period of the candidate
-                double precision                :: epoch_upper                              ! Upper bound for search space
-                double precision                :: last_checked                             ! Time candidate was last in pi/8
-                double precision                :: dum                                      ! Dummy variable
-                double precision                :: max_distance                             ! Maximum distance between the candidate and the Earth
-                double precision, dimension(6)  :: state_can, state_syn                     ! States of the can.,Earth, and the synodic state of the candidate respectively
+                double precision               :: epoch                                    ! Epoch: start time
+                double precision               :: epoch_counter                            ! Epoch loop variable
+                double precision               :: ang_can                                  ! Angle of the candidate with respect to the Sun
+                double precision               :: tau_can                                  ! Period of the candidate
+                double precision               :: epoch_upper                              ! Upper bound for search space
+                double precision               :: last_checked                             ! Time candidate was last in pi/8
+                double precision               :: dum                                      ! Dummy variable
+                double precision               :: max_distance                             ! Maximum distance between the candidate and the Earth
+                double precision, dimension(6) :: state_can, state_syn          ! States of the can.,Earth, and the synodic state of the candidate respectively
 
-                CHARACTER(len=6)                :: abcorr                                   ! Abberation correcton string: initialised to NONE
-                CHARACTER(len=5)                :: obs                                      ! Observing body string
-                CHARACTER(len=12)               :: coord                                    ! Co-ordinate system of reference
-                CHARACTER(len=19)               :: epoch_str                                ! String of the lower epoch bound
-                CHARACTER(len=19)               :: epoch_upper_str                          ! String of the upper epoch bound
-                CHARACTER(len=7)                :: targ_ear                                 ! String of the target body (Earth)
+                CHARACTER(len=6)            :: abcorr                                   ! Abberation correcton string: initialised to NONE
+                CHARACTER(len=5)            :: obs                                      ! Observing body string
+                CHARACTER(len=12)           :: coord                                    ! Co-ordinate system of reference
+                CHARACTER(len=19)           :: epoch_str                                ! String of the lower epoch bound
+                CHARACTER(len=19)           :: epoch_upper_str                          ! String of the upper epoch bound
+                CHARACTER(len=7)            :: targ_ear                                 ! String of the target body (Earth)
 
-                INTEGER                         :: istate = 0                               ! Success flag, iteration counter, max. array locator
-                integer                         :: mpi_id_world
-                integer                         :: mpi_err
-                CHARACTER(*),  intent(in)       :: targ_can                                 ! String of the candidate SPK ID
+                INTEGER                     :: istate = 0                               ! Success flag, iteration counter, max. array locator
 
-                double precision, intent(out)  :: time_lower                                ! Lower bound of the solution search time
-                double precision, intent(out)  :: time_upper                                ! Upper bound of the solution search time
+                CHARACTER(*),  intent(in)   :: targ_can                                 ! String of the candidate SPK ID
+
+                double precision, intent(out)  :: time_lower                               ! Lower bound of the solution search time
+                double precision, intent(out)  :: time_upper                               ! Upper bound of the solution search time
 
 
-                max_distance = 0                                                            ! Initialise to trivially low to force update
+                max_distance = 0                                                        ! Initialise to trivially low to force update
                 
                 ! Ephemeris options
                 
@@ -73,6 +71,15 @@ module state_determination
                 coord           = 'ECLIPJ2000'
                 epoch_str       = 'Jan 1, 2020 00:00'       
                 epoch_upper_str = 'Jan 1, 2100 00:00'
+
+                ! call FURNSH('../data/de414.bsp')                    
+                ! call FURNSH('../data/naif0008.tls')
+                ! call FURNSH('../data/'//targ_can//'.bsp')
+
+                ! call welcomemessage(targ_can)
+
+                ! Program execution: Load the necessary SPICE kernels
+                ! Future optimisation could move these into a meta-kernel
 
                 ! Get the lower bound of the epoch in terms of ephemeris seconds (et)
 
@@ -88,7 +95,7 @@ module state_determination
 
                 ! Initialise the period to which we enforce outside of pi/8 (seconds)
 
-                tau_can = 365.25d0 * 86400.d0                                           ! One synodic periodic, seconds
+                tau_can = 365.25 * 86400.d0                                             ! One synodic periodic, seconds
 
                 do epoch_counter = epoch, epoch_upper, 43200                            ! Deprecated feature: non-integer loop sentinels
 
@@ -134,8 +141,15 @@ module state_determination
 
                 end if
 
+                ! Refine coarse solution using a finer grid & get time at which
+                ! Earth and candidate are farthest away
+
                 time_lower = last_checked
                 time_upper = last_checked+tau_can
+
+                ! call UNLOAD('../data/de414.bsp')                    
+                ! call UNLOAD('../data/naif0008.tls')
+                ! call UNLOAD('../data/'//targ_can//'.bsp')
 
             end subroutine get_state
 
@@ -165,10 +179,14 @@ module state_determination
                 double precision, intent(in)   :: t_epoch                               ! Initial time
                 double precision, intent(out)  :: state_can(6)                          ! Final state
 
-                CHARACTER(len=6)               :: abcorr                                ! Abberation correcton string: initialised to NONE
-                CHARACTER(len=5)               :: obs                                   ! Observing body string
-                CHARACTER(len=12)              :: coord    
+                CHARACTER(len=6)            :: abcorr                                   ! Abberation correcton string: initialised to NONE
+                CHARACTER(len=5)            :: obs                                      ! Observing body string
+                CHARACTER(len=12)           :: coord    
                 double precision               :: dum
+
+                ! call FURNSH('../data/de414.bsp')                    
+                ! call FURNSH('../data/naif0008.tls')
+                ! call FURNSH('../data/'//targ_can//'.bsp')
 
                 abcorr = 'NONE'
                 obs    = 'Sun'
@@ -179,6 +197,10 @@ module state_determination
                 call SPKEZR(targ_can, t_epoch, 'ECLIPJ2000', 'NONE', &
                             'Sun', state_can, dum)
 
+                ! call UNLOAD('../data/de414.bsp')                    
+                ! call UNLOAD('../data/naif0008.tls')
+                ! call UNLOAD('../data/'//targ_can//'.bsp')
+                
             end subroutine CANDIDATE_POSITION
 
             subroutine ROTATOR(state_in, epoch, tt, state_out)
@@ -283,74 +305,5 @@ module state_determination
                 state_out(1) = state_out(1) - mu3bp
 
             end subroutine SYNODIC_ROTATE
-
-            subroutine GLOBAL_ROTATE(state_in, t, state_out)
-
-                ! //////////////////////////////////////////////////////
-                !
-                ! Rotates state from the inertial frame (km, km/s) into
-                ! the synodic frame (dimensionless)
-                !
-                ! //////////////////////////////////////////////////////
-
-                use precision_kinds
-                use constants
-
-                double precision, intent(in)   :: state_in(6)
-                double precision, intent(in)   :: t
-
-                double precision, intent(out)  :: state_out(6)
-
-                double precision               :: r(3), rdot(3)
-                double precision, parameter    :: theta_0 = 100.3762 * 3.141592 / 180.d0           ! Angle of the Earth at J2000
-
-                double precision               :: t_ir(3, 3)
-                double precision               :: t_irdot(3, 3)
-
-                double precision               :: total_angle
-                double precision               :: cang
-                double precision               :: sang 
-                
-                double precision, parameter    :: mu3bp = 3.003458433d-06
-
-                ! Get total angle - OK to make large as cos/sin functions will modulo 2pi the answer
-
-                total_angle = theta_0 + (t * 2.d0 * pi) / (86400.d0 * 365.25d0)
-
-                ! Shift barycenter
-
-                state_out(1) = state_out(1) + mu3bp
-
-                ! Pre-compute cos/sin of angle
-
-                cang = cos(total_angle)
-                sang = sin(total_angle)
-
-                ! Non-dimensionalise first
-
-                r = state_in(1:3)
-                rdot = state_in(4:6)
-
-                ! Construct T
-
-                t_ir(1,1) = cang; t_ir(1, 2) = sang; t_ir(1,3) = 0.0
-                t_ir(2,1) = -sang; t_ir(2,2) = cang; t_ir(2,3) = 0.0
-                t_ir(3,1) = 0.0; t_ir(3,2) = 0.0; t_ir(3,3) = 1.0
-
-                ! Construct T_dot
-
-                t_irdot(1,1) = -sang; t_irdot(1,2) = cang; t_irdot(1,3) = 0.0
-                t_irdot(2,1) = -cang; t_irdot(2,2) = -sang; t_irdot(2,3) = 0.0
-                t_irdot(3,1) = 0.0; t_irdot(3,2) = 0.0; t_irdot(3,3) = 0.0
-
-                ! Multiply
-
-                t_ir = transpose(t_ir)
-                t_irdot = transpose(t_irdot)
-
-                state_out(1:3) = matmul(t_ir, r)
-                state_out(4:6) = matmul(t_ir, rdot) + matmul(t_irdot, r)
-
-            end subroutine GLOBAL_ROTATE
 
     end module
