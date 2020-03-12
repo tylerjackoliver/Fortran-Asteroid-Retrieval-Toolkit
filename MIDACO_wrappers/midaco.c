@@ -38,11 +38,9 @@ int firstRun = 0;
 
 }
 
-int reset_run(){
+int reset_run(){ // Must return a value due to Fortran wrapping
 
 	firstRun = 0;
-
-	printf("Here; firstRun = %d\n", firstRun);
 
 	return 0;
 
