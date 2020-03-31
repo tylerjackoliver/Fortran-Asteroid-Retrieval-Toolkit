@@ -17,8 +17,8 @@ call midaco(p, o, n, ni, m, me, x, f, g, xl, xu, iflag, &
 
 where the variables have the same data-type as in the Fortran MIDACO codes; this will handle both the reverse communicator call to
 the optimiser, and also the call to the printing routines. At the moment, all of the Fortran `REAL`/`INTEGER`-type
-variables are converted to `C`-type using the `ISO_C_BINDING` module on every function call. In the future, this will be reduced to only
-`iflag` and `pf`, so that conversion overheads can be limited. Issues with using `TARGET` also prevent many compiler optimisations from being used.
+variables are copied into to `C`-type using the `ISO_C_BINDING` module on every function call. In the future, this will be reduced to only
+`iflag` and `pf`. Issues with using `TARGET` also prevent many compiler optimisations from being used.
 
 An additional `licenceKey.h` file is required in the root directory, and must contain a declaration of the license key to be used.
 
