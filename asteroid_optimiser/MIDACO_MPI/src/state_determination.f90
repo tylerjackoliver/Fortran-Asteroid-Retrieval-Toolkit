@@ -284,8 +284,8 @@ module state_determination
 
                 ! //////////////////////////////////////////////////////
                 !
-                ! Rotates state from the inertial frame (dimensionless)
-                ! into the synodic frame (dimensionless)
+                ! Rotates state from the synodic frame (dimensionless)
+                ! into the global frame (dimensionless)
                 !
                 ! //////////////////////////////////////////////////////
 
