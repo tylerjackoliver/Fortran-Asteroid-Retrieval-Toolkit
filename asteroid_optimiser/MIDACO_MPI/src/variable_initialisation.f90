@@ -5,11 +5,10 @@ module variable_initialisation
     use                 constants
     use                 state_determination
     use                 problem_parameters
-    use                 mpi_variables
     use, intrinsic   :: iso_c_binding
 
     integer, parameter                  :: O = 2                                                        ! Number of objectives
-    integer, parameter                  :: N = 4                                                        ! Number of variables
+    integer, parameter                  :: N = 5                                                        ! Number of variables
     integer, parameter                  :: NI = 0                                                       ! Number of integer variables
     integer, parameter                  :: M = 0                                                        ! Number of contrains
     integer, parameter                  :: ME = 0                                                       ! Number of equality constraints
@@ -17,8 +16,8 @@ module variable_initialisation
     integer, parameter                  :: LRW = 20000                                                  ! Real workspace
     integer, parameter                  :: LPF = 2000000                                                  ! Number of pareto front
 
-    double precision                    :: XL(4), XU(4)                                                 ! Upper and lower bounds
-    double precision                    :: XOPT(4)                                                      ! OPtimisation variables
+    double precision                    :: XL(5), XU(5)                                                 ! Upper and lower bounds
+    double precision                    :: XOPT(5)                                                      ! OPtimisation variables
     double precision                    :: F(2)                                                         ! Objectives
     double precision                    :: G(4)                                                         ! Constraint arrays; initialised but never used
     double precision                    :: PARAM(13)                                                    ! MIDACO parameters
@@ -191,8 +190,10 @@ module variable_initialisation
 
             end if
 
-            call MPI_WIN_ALLOCATE_SHARED(dataset_size_bytes, disp_unit, MPI_INFO_NULL, node_communicator, dataset_pointer, dataset_window, mpi_err)
-            call MPI_WIN_ALLOCATE_SHARED(perturbed_conds_size_bytes, disp_unit, MPI_INFO_NULL, node_communicator, perturbed_conds_pointer, perturbed_conds_window, mpi_err)
+            call MPI_WIN_ALLOCATE_SHARED(dataset_size_bytes, disp_unit, MPI_INFO_NULL, node_communicator, dataset_pointer, &
+                                         dataset_window, mpi_err)
+            call MPI_WIN_ALLOCATE_SHARED(perturbed_conds_size_bytes, disp_unit, MPI_INFO_NULL, node_communicator, &
+                                         perturbed_conds_pointer, perturbed_conds_window, mpi_err)
 
             !
             ! If we're not the master thread, then we won't know the location of the memory space; thus, query the location of the memory here for use later
@@ -208,8 +209,10 @@ module variable_initialisation
 
             ! Now convert the C pointer to a Fortran pointer (syntax for accessing elements is the same as standard ALLOCATEd arrays)
              
-            call C_F_POINTER(dataset_pointer, dataset, (/t_end_disc_dble, n_mnfd_disc_dble, num_orbits_dble, row_length/))
-            call C_F_POINTER(perturbed_conds_pointer, perturbed_conds_dataset, (/n_mnfd_disc_dble, num_orbits_dble, row_length_perturbed/))
+            call C_F_POINTER(dataset_pointer, dataset, (/t_end_disc_dble, n_mnfd_disc_dble, &
+                                                        num_orbits_dble, row_length/))
+            call C_F_POINTER(perturbed_conds_pointer, perturbed_conds_dataset, &
+                (/n_mnfd_disc_dble, num_orbits_dble, row_length_perturbed/))
   
             ! To avoid racing on the IO, have the global master _only_ read in the data
 
@@ -324,7 +327,7 @@ module variable_initialisation
 
             ! Read through in do-loop until EOF to determine number of lines
 
-           do
+            do
 
                read(97,*,iostat=io_state)                                                  ! Not interested in contents yet
                
@@ -342,20 +345,17 @@ module variable_initialisation
 
            rewind(97)
 
-            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
+!            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
+            num_orbits = 500
+            num_targets = num_orbits * n_mnfd_disc * t_end_disc
 
         end subroutine determine_num_orbits
 
         subroutine variable_init()
 
 
-            ! License key
-
-            key = 'MIDACO_LIMITED_VERSION___[CREATIVE_COMMONS_BY-NC-ND_LICENSE]'
-
             ! Load SPICE kernels
 
-            call sleep(mpi_id_world)
             iunit = 151+mpi_id_world
             call FURNSH('../data/de414.bsp')                    
             call FURNSH('../data/naif0008.tls')
@@ -370,21 +370,27 @@ module variable_initialisation
 
             XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
             XL(2) = 1.D0 * 86400.D0                                                        ! Minimum transfer duration (seconds)
-            XL(3) = 1                                                                      ! t_end
+            XL(3) = maxval(dataset(1000,:,:,1))                                            ! t_end - should be the *least negative* backwards integration time of all orbits
             XL(4) = 1                                                                      ! n_mnfd
+            XL(5) = 1                                                                      ! J
             XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
             XU(2) = 1500.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
-            XU(3) = t_end_disc                                                             ! t_end
+            XU(3) = maxval(dataset(1,:,:,1))                                               ! t_end - should be the *most negative* time of all pi/8 planes
             XU(4) = n_mnfd_disc                                                            ! n_mnfd
-        
+            XU(5) = num_orbits                                                                    ! J
+
+
             ! Starting point, XOPT
 
-            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, 2.d0, 90.d0/) ! EXACT MIDDLE OF THE SET
+            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, (XL(3)+XU(3))/2.d0, &
+                    n_mnfd_disc/2.d0, floor(num_orbits/2.d0) * 1.d0/) ! EXACT MIDDLE OF THE SET
 
+            print *, "Initial point", XOPT
+            
             ! Maximum function evaluations
 
             max_eval = 99999999
-            max_time = 60 ! 60
+            max_time = 300 ! 60
 
             ! Printing options
 
@@ -426,31 +432,41 @@ module variable_initialisation
 
         subroutine intermediate_variable_init()
 
+            use midaco_interface
+            implicit none
+
+            integer :: temp
+
             call FURNSH('../data/'//targ_can//'.bsp')
 
             ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
 
             call GET_STATE(targ_can, time_lower, time_upper)
-
+            
             ! Optimiser bounds
 
             XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
             XL(2) = 1.D0 * 86400.D0                                                        ! Minimum transfer duration (seconds)
-            XL(3) = 1                                                                      ! t_end
+            XL(3) = maxval(dataset(1000,:,:,1))                                            ! t_end - should be the *least negative* backwards integration time of all orbits
             XL(4) = 1                                                                      ! n_mnfd
+            XL(5) = 1                                                                      ! J
             XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
             XU(2) = 1500.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
-            XU(3) = 100                                                                    ! t_end
-            XU(4) = 360                                                                    ! n_mnfd
-        
+            XU(3) = maxval(dataset(1,:,:,1))                                               ! t_end - should be the *most negative* time of all pi/8 planes
+            XU(4) = n_mnfd_disc                                                            ! n_mnfd
+            XU(5) = num_orbits                                                                    ! J
+
             ! Starting point, XOPT
 
-            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, 2.d0, 90.d0/) ! EXACT MIDDLE OF THE SET
+            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, (XL(3)+XU(4)), &
+                    n_mnfd_disc/2.d0, floor(num_orbits/2.d0) * 1.d0/) ! EXACT MIDDLE OF THE SET
 
             ! Maximum function evaluations
 
             max_eval = 99999999
-            max_time = 60 ! 2 days
+            max_time = 10 ! 2 days
+            optim_flag = 0
+            optim_stop = 0
 
             ! Printing options
 
@@ -472,6 +488,12 @@ module variable_initialisation
             PARAM(11) = 0.000001D0      ! EPSILON  
             PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt)
             PARAM(13) = 0.0D0           ! CHARACTER 
+
+            iw = 0
+            rw = 0.d0
+            pf = 0.d0
+
+            temp = reset_midaco_run()
 
         end subroutine intermediate_variable_init
 

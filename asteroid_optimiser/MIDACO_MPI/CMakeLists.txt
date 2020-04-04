@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 #>> Set up Project and Subdirectories
 
-enable_language(Fortran)
+enable_language(Fortran C)
 project (ast_optim)
 
 include_directories(${CMAKE_BINARY_DIR}/../mod/)
@@ -20,29 +20,32 @@ add_executable (ast_optim
                 src/constants.f90
                 src/main.f90
                 src/problem_parameters.f90
-                src/compute_spline.f90
+                src/compute_spline_3d.f90
                 src/variable_initialisation.f90
-                src/midaco.f
-                src/ancillary_data.f90
-		src/mpi_variables.f90
+                src/midaco_interface.f90
+                src/ancillary_data_3d.f90
+                src/midaco_wrap.c
+                src/midaco.o
 )
 
 #>> Compilation Options
 
 ## GNU OPTIONS
-#	target_compile_options (ast_optim PUBLIC "-Wall")
-#	target_compile_options (ast_optim PUBLIC "-O2") 				                        # Optimization level -O2
-#	target_compile_options (ast_optim PUBLIC "-cpp")
-#	target_compile_options (ast_optim PUBLIC "-DDEBUG")
-#	target_compile_options (ast_optim PUBLIC "-Wno-tabs")
+	target_compile_options (ast_optim PUBLIC "-Wall")
+	target_compile_options (ast_optim PUBLIC "-O2") 				                        # Optimization level -O2
+	target_compile_options (ast_optim PUBLIC "-cpp")
+	target_compile_options (ast_optim PUBLIC "-DDEBUG")
+	target_compile_options (ast_optim PUBLIC "-Wno-tabs")
 
 
 ## IFORT OPTIONS
-target_compile_options (ast_optim PUBLIC "-warn")
+#target_compile_options (ast_optim PUBLIC "-warn")
 #target_compile_options (ast_optim PUBLIC -check all)
-target_compile_options (ast_optim PUBLIC "-O2")
-target_compile_options (ast_optim PUBLIC "-fpp") # Enable pre-processor
-target_compile_options (ast_optim PUBLIC "-DDEBUG")
-target_compile_options (ast_optim PUBLIC "-check all, noarg_temp_created")
+#target_compile_options (ast_optim PUBLIC "-O2")
+#target_compile_options (ast_optim PUBLIC "-fpp") # Enable pre-processor
+#target_compile_options (ast_optim PUBLIC "-DDEBUG")
+#target_compile_options (ast_optim PUBLIC "-check all, noarg_temp_created")
 
+
+set_property(TARGET ast_optim PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries(ast_optim PUBLIC fat spice bspline-fortran)                               # Link the libraries

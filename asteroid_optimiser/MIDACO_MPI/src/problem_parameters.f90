@@ -24,8 +24,9 @@ module problem_parameters
     ! PROBLEM PARAMETERS - CHANGE ME
     !
     character(7)                :: targ_can                                                             ! Needs to change to fit the target *currently* being studied
-    character(*),  parameter    :: datafile = '../data/2020-02-14_L1PlanarBackCondsSynodicDense.csv'
-    character(*),  parameter    :: original_orbit_data = '../data/2020-02-01_L2PlanarPerturbedConds.csv'
+    character(*),  parameter    :: datafile = &
+    '/media/jack/Files/asteroid_retrieval_datasets/Backwards/2020-03-03_L2SHaloBackCondsSynodic.csv'
+    character(*),  parameter    :: original_orbit_data = '../data/2020-02-01_L1PlanarPerturbedConds.csv'
     character(*),  parameter    :: target_file = '../data/targets_to_consider'
     real(kind=dp), parameter    :: minimum_transfer_time = 1.d0* 86400                                  ! Seconds
     real(kind=dp), parameter    :: maximum_transfer_time = 1600.d0 * 86400                              ! Seconds

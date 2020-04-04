@@ -33,7 +33,6 @@ module state_determination
 
                 use precision_kinds
                 use constants
-                use mpi_f08
 
                 implicit none
 
@@ -199,8 +198,7 @@ module state_determination
                 double precision               :: t_ir(3, 3)
                 double precision               :: t_ir_dot(3, 3)
 
-                theta_dot = 2.d0 * pi / (86400.d0 * 365.25d0)
-                theta     = (tt + epoch) * theta_dot
+                theta     = (tt + epoch) * time_to_angle_quotient
 
                 cang = dcos(theta)
                 sang = dsin(theta)
@@ -245,11 +243,9 @@ module state_determination
                 double precision               :: cang
                 double precision               :: sang 
                 
-                double precision, parameter    :: mu3bp = 3.0032080443d-06
-
                 ! Get total angle - OK to make large as cos/sin functions will modulo 2pi the answer
 
-                total_angle = theta_0 + (t * 2.d0 * pi) / (86400.d0 * 365.25d0)
+                total_angle = theta_0 + (t * time_to_angle_quotient)
 
                 ! Pre-compute cos/sin of angle
 
@@ -258,8 +254,8 @@ module state_determination
 
                 ! Non-dimensionalise first
 
-                r = state_in(1:3) / au
-                rdot = state_in(4:6) / au * 2 * pi / 365.25
+                r = state_in(1:3) * position_non_dimensionalise_quotient
+                rdot = state_in(4:6) * velocity_non_dimensionalise_quotient
 
                 ! Construct T
 
@@ -288,38 +284,38 @@ module state_determination
 
                 ! //////////////////////////////////////////////////////
                 !
-                ! Rotates state from the inertial frame (km, km/s) into
-                ! the synodic frame (dimensionless)
+                ! Rotates state from the inertial frame (dimensionless)
+                ! into the synodic frame (dimensionless)
                 !
                 ! //////////////////////////////////////////////////////
 
                 use precision_kinds
                 use constants
 
-                double precision, intent(in)   :: state_in(6)
-                double precision, intent(in)   :: t
+                double precision, intent(in)    :: state_in(6)
+                double precision, intent(in)    :: t
 
-                double precision, intent(out)  :: state_out(6)
+                double precision, intent(out)   :: state_out(6)
 
-                double precision               :: r(3), rdot(3)
-                double precision, parameter    :: theta_0 = 100.3762 * 3.141592 / 180.d0           ! Angle of the Earth at J2000
+                double precision                :: r(3), rdot(3)
+                double precision, parameter     :: theta_0 = 100.3762 * 3.141592 / 180.d0           ! Angle of the Earth at J2000
 
-                double precision               :: t_ir(3, 3)
-                double precision               :: t_irdot(3, 3)
+                double precision                :: t_ir(3, 3)
+                double precision                :: t_irdot(3, 3)
 
-                double precision               :: total_angle
-                double precision               :: cang
-                double precision               :: sang 
+                double precision                :: state_translate(6)
+
+                double precision                :: total_angle
+                double precision                :: cang
+                double precision                :: sang 
                 
-                double precision, parameter    :: mu3bp = 3.0032080443d-06
-
                 ! Get total angle - OK to make large as cos/sin functions will modulo 2pi the answer
 
-                total_angle = theta_0 + (t * 2.d0 * pi) / (86400.d0 * 365.25d0)
+                total_angle = theta_0 + t * time_to_angle_quotient
 
                 ! Shift barycenter
 
-                state_out(1) = state_out(1) + mu3bp
+                state_translate(1) = state_in(1) + mu3bp
 
                 ! Pre-compute cos/sin of angle
 
@@ -328,8 +324,8 @@ module state_determination
 
                 ! Non-dimensionalise first
 
-                r = state_in(1:3)
-                rdot = state_in(4:6)
+                r = state_translate(1:3)
+                rdot = state_translate(4:6)
 
                 ! Construct T
 
