@@ -214,7 +214,7 @@ module ancillary_data
 
         real(kind=dp), intent(out)              :: target_point(6)
 
-        call b_spline_interpolate_perturbed_conds(t_end, n_mnfd, target_point)
+        call b_spline_interpolate_perturbed_conds(n_mnfd, J, target_point)
 
     end subroutine generate_target_point
 

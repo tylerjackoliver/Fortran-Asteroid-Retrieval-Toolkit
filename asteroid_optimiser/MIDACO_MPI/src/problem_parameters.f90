@@ -25,14 +25,17 @@ module problem_parameters
     !
     character(7)                :: targ_can                                                             ! Needs to change to fit the target *currently* being studied
     character(*),  parameter    :: datafile = &
-    '/media/jack/Files/asteroid_retrieval_datasets/Backwards/2020-03-03_L2SHaloBackCondsSynodic.csv'
-    character(*),  parameter    :: original_orbit_data = '../data/2020-02-01_L1PlanarPerturbedConds.csv'
-    character(*),  parameter    :: target_file = '../data/targets_to_consider'
+!    '/scratch/jt6g15/asteroid_retrieval_datasets/backwards/backwards.csv'
+    '../data/TEST'
+    character(*),  parameter    :: original_orbit_data = '../data/2020-02-01_L2PlanarPerturbedConds.csv'
+    character(*),  parameter    :: target_file = '../data/total_candidates'
+    character(*),  parameter    :: ephemeris_prefix='../../ephemeris_files/ephemeris_files/'
     real(kind=dp), parameter    :: minimum_transfer_time = 1.d0* 86400                                  ! Seconds
     real(kind=dp), parameter    :: maximum_transfer_time = 1600.d0 * 86400                              ! Seconds
     integer,       allocatable  :: targ_can_array(:)                                                    ! Placeholder for now
     integer,       parameter    :: t_end_disc = 1000                                                    ! Number of backwards-time integrations
     integer,       parameter    :: n_mnfd_disc = 360                                                    ! Number of in-plane discretisations
+    integer,       parameter    :: max_time = 60
     !
     ! //////////////////////////////
 

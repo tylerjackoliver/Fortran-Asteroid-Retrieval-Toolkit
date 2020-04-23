@@ -23,34 +23,34 @@ PROGRAM MAIN
     ! Initialise MPI functionality; read-in datasets
 
     call MPI_VARIABLE_INIT()
-    
+	print *, "here1"    
     ! Perform the chunk of our work for the dataset
 
-    ! do target_count = (mpi_id_world+1), size(targ_can_array), mpi_world_size
-
-    do target_count = 1, 1
+    do target_count = (mpi_id_world+1), size(targ_can_array), mpi_world_size
 
         write(targ_can_temp, '(I7)'), targ_can_array(target_count)
 
         targ_can = trim(targ_can_temp)
 
         if (first_load) then
-
+		print *, "here 2"
             call variable_init()
             first_load = .false.    
-
+		print *, "here 3"
         else
 
             call intermediate_variable_init()
 
         end if
-
+	print *, "ere 4"
         call run_optim()
+    print *, "ere 5"
         call get_pareto_front()
+    print *, "here 6"
         call intermediate_variable_destruct()
-
+    print *, "here 7"
     end do
-
+    print *, "here 8"
     call MPI_BARRIER(MPI_COMM_WORLD, mpi_err)
 
     ! Exit gracefully

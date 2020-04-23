@@ -7,6 +7,8 @@ module variable_initialisation
     use                 problem_parameters
     use, intrinsic   :: iso_c_binding
 
+    implicit none
+
     integer, parameter                  :: O = 2                                                        ! Number of objectives
     integer, parameter                  :: N = 5                                                        ! Number of variables
     integer, parameter                  :: NI = 0                                                       ! Number of integer variables
@@ -28,7 +30,6 @@ module variable_initialisation
     integer                             :: optim_flag                                                   ! Optimiser information flag
     integer                             :: optim_stop                                                   ! Optimiser stopping variable
     integer                             :: IW(LIW)                                                      ! Integer workspace
-    integer                             :: max_time                                                     ! Maximum walltime for optimisations
     integer                             :: max_eval                                                     ! Maximum function evaluations
     integer                             :: print_eval                                                   ! How often to print
     integer                             :: save_to_file                                                 ! Output verbosity
@@ -47,8 +48,8 @@ module variable_initialisation
 
     logical                             :: is_loaded = .false.
 
-    integer                             :: num_targets                                                  ! Number of items in the input file
-    integer                             :: num_orbits                                                   ! Number of orbits in the file
+    integer(8) :: num_targets ! Number of items in the input file
+    integer(8) :: num_orbits ! Number of orbits in the file
     integer(8)                          :: num_orbits_dble
 
     Integer                             :: iunit                                                        ! Unit for the Pareto file
@@ -96,7 +97,7 @@ module variable_initialisation
 
         subroutine mpi_variable_init()
 
-            integer                     :: i
+            integer                     :: i, j, k
 
             disp_unit=1
 
@@ -128,7 +129,7 @@ module variable_initialisation
 
 #endif
 
-            call MPI_BCAST(num_orbits, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)
+            call MPI_BCAST(num_orbits, STORAGE_SIZE(num_orbits), MPI_BYTE, 0, MPI_COMM_WORLD, mpi_err)
 
 #ifdef DEBUG
 
@@ -143,6 +144,7 @@ module variable_initialisation
 
             call MPI_COMM_SPLIT_TYPE(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, node_communicator, mpi_err)
             call MPI_COMM_RANK(node_communicator, mpi_id_shared, mpi_err)
+            call MPI_COMM_RANK(MPI_COMM_WORLD, mpi_id_world, mpi_err)
 
 #ifdef DEBUG
 
@@ -251,22 +253,36 @@ module variable_initialisation
 
                 do i = 1, t_end_disc
 
+                    do j = 1, n_mnfd_disc
+
+                        do k = 1, num_orbits
                     ! Send dataset
 
-                    to_send_size = size(dataset(i, :, :,:))
-                    call MPI_BCAST(dataset(i, :, :, :), to_send_size, MPI_DOUBLE_PRECISION, host, node_master_communicator, mpi_err)
-                    
+                            to_send_size = size(dataset(i, :, :,:))
+ !                   call MPI_BCAST(dataset(i, :, :, :), to_send_size, MPI_DOUBLE_PRECISION, host, node_master_communicator, mpi_err)
+                            call MPI_BCAST(dataset(i, j, k, :), STORAGE_SIZE(dataset(i,j,k,:)/8), MPI_byte, host, &
+                                           node_master_communicator, mpi_err)  
+                        
+                       end do
+
+                   end do
+
+                  
                 end do
                 
                 print *, "Rank", mpi_id_world, n_mnfd_disc
 
                 do i = 1, n_mnfd_disc
 
-                        ! Send perturbed_conds
+                        do j = 1, num_orbits
 
-                    to_send_size = size(perturbed_conds_dataset(i, :, :))
-                    call MPI_BCAST(perturbed_conds_dataset(i,:,:), to_send_size, MPI_DOUBLE_PRECISION, host,&
-                                         node_master_communicator, mpi_err) 
+                                ! Send perturbed_conds
+
+                                to_send_size = size(perturbed_conds_dataset(i, j, :))
+                                call MPI_BCAST(perturbed_conds_dataset(i,j,:), STORAGE_SIZE(perturbed_conds_dataset(i,j,:)/8), &
+                                                MPI_byte, host, node_master_communicator, mpi_err) 
+
+                        end do
 
                 end do
 
@@ -306,7 +322,7 @@ module variable_initialisation
             !
 
             to_send_size = size(targ_can_array)
-            call MPI_BCAST(targ_can_array, to_send_size, MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)
+            call MPI_BCAST(targ_can_array, size(targ_can_array), MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)
 #ifdef DEBUG
 
             print *, "Rank: ", mpi_id_world, "has that bit o the dataset as", dataset(864, 90, 2, :), &
@@ -339,27 +355,26 @@ module variable_initialisation
 
                num_targets = num_targets + 1
 
-           end do
+	  end do
 
            write(*, '(A)') "done."
 
            rewind(97)
 
-!            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
-            num_orbits = 500
-            num_targets = num_orbits * n_mnfd_disc * t_end_disc
+            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
+!            num_orbits = 7987
+            ! num_targets = num_orbits * n_mnfd_disc * t_end_disc
 
         end subroutine determine_num_orbits
 
         subroutine variable_init()
-
 
             ! Load SPICE kernels
 
             iunit = 151+mpi_id_world
             call FURNSH('../data/de414.bsp')                    
             call FURNSH('../data/naif0008.tls')
-            call FURNSH('../data/'//targ_can//'.bsp')
+            call FURNSH(ephemeris_prefix//targ_can//'.bsp')
             open(iunit, file="../data/paretoFront_"//targ_can)
 
             ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
@@ -369,28 +384,26 @@ module variable_initialisation
             ! Optimiser bounds
 
             XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            XL(2) = 1.D0 * 86400.D0                                                        ! Minimum transfer duration (seconds)
+            XL(2) = minimum_transfer_time                                                  ! Minimum transfer duration (seconds)
             XL(3) = maxval(dataset(1000,:,:,1))                                            ! t_end - should be the *least negative* backwards integration time of all orbits
             XL(4) = 1                                                                      ! n_mnfd
             XL(5) = 1                                                                      ! J
             XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            XU(2) = 1500.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+            XU(2) = maximum_transfer_time 						   ! Maximum transfer epoch (seconds)
             XU(3) = maxval(dataset(1,:,:,1))                                               ! t_end - should be the *most negative* time of all pi/8 planes
             XU(4) = n_mnfd_disc                                                            ! n_mnfd
-            XU(5) = num_orbits                                                                    ! J
+            XU(5) = num_orbits                                                             ! J
 
 
             ! Starting point, XOPT
 
-            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, (XL(3)+XU(3))/2.d0, &
-                    n_mnfd_disc/2.d0, floor(num_orbits/2.d0) * 1.d0/) ! EXACT MIDDLE OF THE SET
+            XOPT = (XL + XU)/2.d0
 
             print *, "Initial point", XOPT
             
             ! Maximum function evaluations
 
             max_eval = 99999999
-            max_time = 300 ! 60
 
             ! Printing options
 
@@ -426,7 +439,7 @@ module variable_initialisation
 
         subroutine intermediate_variable_destruct()
 
-            call UNLOAD('../data/'//targ_can//'.bsp')
+            call UNLOAD(ephemeris_prefix//targ_can//'.bsp')
 
         end subroutine intermediate_variable_destruct
 
@@ -437,7 +450,7 @@ module variable_initialisation
 
             integer :: temp
 
-            call FURNSH('../data/'//targ_can//'.bsp')
+            call FURNSH(ephemeris_prefix//targ_can//'.bsp')
 
             ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
 
@@ -446,31 +459,29 @@ module variable_initialisation
             ! Optimiser bounds
 
             XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            XL(2) = 1.D0 * 86400.D0                                                        ! Minimum transfer duration (seconds)
+            XL(2) = minimum_transfer_time                                                        ! Minimum transfer duration (seconds)
             XL(3) = maxval(dataset(1000,:,:,1))                                            ! t_end - should be the *least negative* backwards integration time of all orbits
             XL(4) = 1                                                                      ! n_mnfd
             XL(5) = 1                                                                      ! J
             XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            XU(2) = 1500.D0 * 86400.D0                                                     ! Maximum transfer epoch (seconds)
+            XU(2) = maximum_transfer_time                                                     ! Maximum transfer epoch (seconds)
             XU(3) = maxval(dataset(1,:,:,1))                                               ! t_end - should be the *most negative* time of all pi/8 planes
             XU(4) = n_mnfd_disc                                                            ! n_mnfd
             XU(5) = num_orbits                                                                    ! J
 
             ! Starting point, XOPT
 
-            XOPT = (/(time_lower+time_upper)*.5d0, 750.d0 * 86400d0, (XL(3)+XU(4)), &
-                    n_mnfd_disc/2.d0, floor(num_orbits/2.d0) * 1.d0/) ! EXACT MIDDLE OF THE SET
+            XOPT = (XL + XU)/2.d0
 
             ! Maximum function evaluations
 
             max_eval = 99999999
-            max_time = 10 ! 2 days
             optim_flag = 0
             optim_stop = 0
 
             ! Printing options
 
-            print_eval = 10000
+            print_eval = 100
             save_to_file = 0 ! Save solution to text files
 
             ! Choose MIDACO parameters (FOR ADVANCED USERS)
@@ -509,7 +520,7 @@ module variable_initialisation
                     
             call UNLOAD('../data/de414.bsp')                    
             call UNLOAD('../data/naif0008.tls')
-            call UNLOAD('../data/'//targ_can//'.bsp')
+            call UNLOAD(ephemeris_prefix//targ_can//'.bsp')
 
             ! Free the shared-memory space
 
@@ -537,7 +548,7 @@ module variable_initialisation
                     
             call UNLOAD('../data/de414.bsp')                    
             call UNLOAD('../data/naif0008.tls')
-            call UNLOAD('../data/'//targ_can//'.bsp')
+            call UNLOAD(ephemeris_prefix//targ_can//'.bsp')
 
             close(iunit)
 
@@ -653,7 +664,7 @@ module variable_initialisation
             print *, "                  Author: Jack Tyler                     "
             print *, "              Email: jack.tyler@soton.ac.uk              "
             print *, " "
-            print *, " This version last updated 2020-02-03                    "
+            print *, " This version last updated 2020-04-21                    "
             print *, " "
             print *, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
             print *, " "
