@@ -315,6 +315,7 @@ module state_determination
 
                 ! Shift barycenter
 
+                state_translate = state_in
                 state_translate(1) = state_in(1) + mu3bp
 
                 ! Pre-compute cos/sin of angle
