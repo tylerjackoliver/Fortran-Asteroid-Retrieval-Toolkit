@@ -194,7 +194,7 @@ contains
 
         ! Get states via interpolation of the dataset
 
-        call BSPLINE_INTERPOLATE(t_end, n_mnfd, orbit_choice, state_targ)
+        call BSPLINE_INTERPOLATE_STEP(t_end, n_mnfd, orbit_choice, state_targ)
 
         ! Rotate into the synodic frame
 
