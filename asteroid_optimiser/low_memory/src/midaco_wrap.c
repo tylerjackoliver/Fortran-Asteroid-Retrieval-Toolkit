@@ -13,10 +13,10 @@ int firstRun = 0;
 	if (firstRun == 0){
 
 		returnCode = midaco_print(1 , *printeval, *save2file, iflag, 
-								istop, &*f, &*g, &*x, &*xl, 
-								&*xu, *o, *n, *ni, *m, 
-								*me, &*rw, &*pf, *maxeval, 
-								*maxtime, &*param, *p, &*licenseKeyJack);
+								istop, f, g, x, xl, 
+								xu, *o, *n, *ni, *m, 
+								*me, rw, pf, *maxeval, 
+								*maxtime, param, *p, licenseKeyJack);
 
 		firstRun++;
 
@@ -25,14 +25,14 @@ int firstRun = 0;
 	returnCode = midaco(p, o, n, ni, 
 						m, me, x, f, g, 
 						xl, xu, iflag, istop, 
-						&*param, &*rw, lrw, iw, 
-						liw, &*pf, lpf, &*licenseKeyJack);
+						param, rw, lrw, iw, 
+						liw, pf, lpf, licenseKeyJack);
 
 	returnCode = midaco_print(2, *printeval, *save2file, iflag, 
-							  istop, &*f, &*g, &*x, &*xl, 
-							  &*xu, *o, *n, *ni, *m, 
-							  *me, &*rw, &*pf, *maxeval, 
-							  *maxtime, &*param, *p, &*licenseKeyJack);
+							  istop, f, g, x, xl, 
+							  xu, *o, *n, *ni, *m, 
+							  *me, rw, pf, *maxeval, 
+							  *maxtime, param, *p, licenseKeyJack);
 
 	return returnCode;
 
