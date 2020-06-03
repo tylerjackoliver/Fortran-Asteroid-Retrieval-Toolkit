@@ -356,7 +356,7 @@ module variable_initialisation
             PARAM( 3) = 0.0D0           ! FSTOP
             PARAM( 4) = 0.0D0           ! ALGOSTOP
             PARAM( 5) = 0.0D0           ! EVALSTOP
-            PARAM( 6) = 100.D0            ! FOCUS
+            PARAM( 6) = -100.D0            ! FOCUS
             PARAM( 7) = 100.0D0           ! ANTS
             PARAM( 8) = 50.0D0           ! KERNEL
             PARAM( 9) = 0.0D0           ! ORACLE
@@ -433,7 +433,7 @@ module variable_initialisation
             PARAM( 3) = 0.0D0           ! FSTOP
             PARAM( 4) = 0.0D0           ! ALGOSTOP
             PARAM( 5) = 0.0D0           ! EVALSTOP
-            PARAM( 6) = 10.D0           ! FOCUS
+            PARAM( 6) = -10.D0           ! FOCUS
             PARAM( 7) = 1000.0D0         ! ANTS
             PARAM( 8) = 50.0D0          ! KERNEL
             PARAM( 9) = 0.0D0           ! ORACLE
