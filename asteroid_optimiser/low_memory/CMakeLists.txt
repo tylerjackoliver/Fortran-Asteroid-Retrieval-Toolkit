@@ -8,10 +8,12 @@ enable_language(Fortran C CXX)
 include_directories(${CMAKE_BINARY_DIR}/../mod/) 
 link_directories(${CMAKE_BINARY_DIR}/../lib/)
 
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+
+#>> Search for Boost; add to project
+
 find_package (Boost REQUIRED)
 include_directories( ${Boost_INCLUDE_DIR} )
-
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 #>> Source Code
 
@@ -36,12 +38,11 @@ add_executable (ast_optim
 
 #>> Compilation Options
 
-## Fortran bits
+# Fortran options
 
 target_compile_options(ast_optim PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-Wall -O2 -cpp -DDEBUG -Wno-tabs>)
-link_directories(${CMAKE_BINARY_DIR}/../lib/)
 target_link_libraries(ast_optim PUBLIC fat spice bspline)  
 set_property(TARGET ast_optim PROPERTY LINKER_LANGUAGE Fortran)
 
-# C++ bits
+# C++ options
 target_compile_options(ast_optim PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-O2>)
