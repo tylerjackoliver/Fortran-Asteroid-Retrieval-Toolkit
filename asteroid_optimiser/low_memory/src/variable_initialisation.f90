@@ -1,6 +1,23 @@
+!------------------------------------------------------------------------------
+! Fortran Asteroid Retrieval Tool (FART) v1.0: variable_initialisation module
+!------------------------------------------------------------------------------
+!
+! MODULE: Variable initialisation
+!
+!> @author
+!> Jack Tyler, University of Southampton
+!
+! DESCRIPTION: 
+!> Contains routines to create parallel working regions based on the MPI shared
+!! memory spaces paradig, and distribute and synchronise data across all workers.
+!
+! REVISION HISTORY:
+! 01 Oct 2019 - Initial Version
+! 01 Jul 2020 - Refactoring; add Doxygen support
+!------------------------------------------------------------------------------
+
 module variable_initialisation
 
-    use                 precision_kinds
     use                 mpi
     use                 constants
     use                 state_determination
@@ -9,59 +26,75 @@ module variable_initialisation
 
     implicit none
 
+    ! --------------------------------------------
+    !
+    ! The following variables are unique to MIDACO.
+    ! The user should supply their own variables
+    ! for their own optimiser where (MIDACO) is given
+    ! in the description of the variable.
+    !
+    ! ---------------------------------------------
+
     integer, parameter                  :: O = 2                                                        ! Number of objectives
     integer, parameter                  :: N = 5                                                        ! Number of variables
     integer, parameter                  :: NI = 0                                                       ! Number of integer variables
-    integer, parameter                  :: M = 0                                                        ! Number of contrains
+    integer, parameter                  :: M = 0                                                        ! Number of contraints
     integer, parameter                  :: ME = 0                                                       ! Number of equality constraints
-    integer, parameter                  :: LIW = 5000                                                   ! Integer workspace
-    integer, parameter                  :: LRW = 20000                                                  ! Real workspace
-    integer, parameter                  :: LPF = 2000000                                                  ! Number of pareto front
+    integer, parameter                  :: LIW = 5000                                                   ! Integer workspace (MIDACO)
+    integer, parameter                  :: LRW = 20000                                                  ! Real workspace (MIDACO)
+    integer, parameter                  :: LPF = 2000000                                                ! Number of pareto front (MIDACO)
+    double precision                    :: PARAM(13)                                                    ! MIDACO parameters (MIDACO)
+    double precision                    :: RW(LRW), PF(LPF)                                             ! Workspace and pareto front (MIDACO)
 
     double precision                    :: XL(5), XU(5)                                                 ! Upper and lower bounds
-    double precision                    :: XOPT(5)                                                      ! OPtimisation variables
+    double precision                    :: XOPT(5)                                                      ! Optimisation variables
     double precision                    :: F(2)                                                         ! Objectives
     double precision                    :: G(1)                                                         ! Constraint arrays; initialised but never used
-    double precision                    :: PARAM(13)                                                    ! MIDACO parameters
-    double precision                    :: RW(LRW), PF(LPF)                                             ! Workspace and pareto front
 
     double precision, allocatable       :: pareto_front_data(:, :)                                      ! Stores the custom pareto_front_data for generation of ancillary data
 
-    integer                             :: optim_flag                                                   ! Optimiser information flag
-    integer                             :: optim_stop                                                   ! Optimiser stopping variable
-    integer                             :: IW(LIW)                                                      ! Integer workspace
-    integer                             :: max_eval                                                     ! Maximum function evaluations
-    integer                             :: print_eval                                                   ! How often to print
-    integer                             :: save_to_file                                                 ! Output verbosity
-    integer                             :: number_of_pareto_solutions                                   ! ...number of Pareto solutions
-    integer                             :: iostate
-    integer                             :: num_candidates
-    integer                             :: candidates_per_processor
-    integer                             :: host
+    integer                             :: optim_flag                                                   ! Optimiser information flag (MIDACO)
+    integer                             :: optim_stop                                                   ! Optimiser stopping variable (MIDACO)
+    integer                             :: IW(LIW)                                                      ! Integer workspace (MIDACO)
+    integer                             :: max_eval                                                     ! Maximum function evaluations (MIDACO)
+    integer                             :: print_eval                                                   ! How often to print (MIDACO)
+    integer                             :: save_to_file                                                 ! Output verbosity (MIDACO)
+    integer                             :: number_of_pareto_solutions                                   ! ...number of Pareto solutions (MIDACO)
 
-    integer, allocatable                :: candidates_to_consider(:)
+    integer                             :: iostate                                                      ! File I/O status variable
+    integer                             :: num_candidates                                               ! Number of candidates considered in the work
+    integer                             :: candidates_per_processor                                     ! Number of candidates per processor
+    integer                             :: host                                                         ! Host processor ID
 
-    character*60                        :: key                                                          ! License key bit
+    integer, allocatable                :: candidates_to_consider(:)                                    ! Candidates to optimise
+
+    character*60                        :: key                                                          ! License key (MIDACO)
 
     double precision                    :: time_lower                                                   ! Lower bound for the optimisation time - dummy here
     double precision                    :: time_upper                                                   ! Upper bound for the optimisation time - dummy here
 
-    logical                             :: is_loaded = .false.
+    logical                             :: is_loaded = .false.                                          ! Has the dataset been loaded?
 
-    integer(8) :: num_targets ! Number of items in the input file
-    integer(8) :: num_orbits ! Number of orbits in the file
+    !
+    ! The odd mix of single- and double-precision integers in the variable declarations below is as a result of some variables (particularly the number of lines)
+    ! needing to be doubles to prevent overflows. The way MPI is coded for its Fortran/FORTRAN interface means that if one argument is double precision, they all
+    ! have to be. How convenient!
+    !
+
+    integer(8)                          :: num_targets                                                  ! Number of items in the input file
+    integer(8)                          :: num_orbits                                                   ! Number of orbits in the file
     integer(8)                          :: num_orbits_dble
 
-    Integer                             :: iunit                                                        ! Unit for the Pareto file
+    integer                             :: iunit                                                        ! Unit for the Pareto file
 
     ! MPI variables
 
     integer                             :: mpi_err                                                      ! MPI error integer
     integer                             :: mpi_id_world                                                 ! Core ID of the MPI process
     integer                             :: mpi_id_shared                                                ! ID of the process in the shared-space
-    integer                             :: mpi_world_size 
-    integer                             :: mpi_name_string_size
-    integer                             :: mpi_color
+    integer                             :: mpi_world_size                                               ! Number of workers
+    integer                             :: mpi_name_string_size                                         ! Maximum length of MPI name string
+    integer                             :: mpi_color                                                    ! MPI inclusion flag in topology set-up
 
     ! MPI communicators
 
@@ -70,7 +103,7 @@ module variable_initialisation
 
     ! MPI node naming
 
-    character(MPI_MAX_PROCESSOR_NAME)   :: proc_name
+    character(MPI_MAX_PROCESSOR_NAME)   :: proc_name                                                    ! Processor name to MPI
 
     ! MPI window variables
 
@@ -79,21 +112,38 @@ module variable_initialisation
     integer                             :: dataset_window                                               ! Window that MPI opens to the shared memory
     integer                             :: perturbed_conds_window                                       ! Window that MPI opens to the shared memory
 
-    integer                             :: info
+    integer                             :: info                                                         ! Another MPI status flag
 
-    integer(kind=MPI_ADDRESS_KIND)      :: dataset_size_bytes
-    integer(kind=MPI_ADDRESS_KIND)      :: perturbed_conds_size_bytes
-    integer(8)                          :: row_length
-    integer(8)                          :: row_length_perturbed
-    integer(8)                          :: double_size
-    integer                             :: disp_unit
-    integer(8)                          :: t_end_disc_dble = t_end_disc
-    integer(8)                          :: n_mnfd_disc_dble = n_mnfd_disc
-    integer(8)                          :: to_send_size
-    real*8                              :: dataset_double
-    real*8                              :: perturbed_conds_double
+    integer(kind=MPI_ADDRESS_KIND)      :: dataset_size_bytes                                           ! Size of the target dataset in bytes
+    integer(kind=MPI_ADDRESS_KIND)      :: perturbed_conds_size_bytes                                   ! Size of perturbed initial conditions in bytes
+    
+    integer(8)                          :: row_length = 7                                               ! Length of one row of the target dataset
+    integer(8)                          :: row_length_perturbed = 6                                     ! Length of one row of the perturbed conditions dataset
+    integer(8)                          :: double_size                                                  ! sizeof(double) holder
+    integer                             :: disp_unit                                                    ! Displacement stride, MPI
+    integer(8)                          :: n_mnfd_disc_dble = n_mnfd_disc                               ! Number of in-orbit discretisations
+    integer(8)                          :: to_send_size                                                 ! Size of message to send
+    
+    double precision                    :: dataset_double                                               ! 
+    double precision                    :: perturbed_conds_double
 
     contains
+    
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Initialises the MPI topology for the problem, and reads-in and distributes
+        !! all the datasets to be used in the problem.
+        !
+        ! REVISION HISTORY:
+        ! 01 Oct 2019 - Initial version
+        ! 4 July 2020 - Refactor; add Doxygen support   
+        !
+        !--------------------------------------------------------------------------- 
 
         subroutine mpi_variable_init()
 
@@ -101,12 +151,18 @@ module variable_initialisation
 
             disp_unit=1
 
+            !
             ! Initialise MPI
+            !
 
             call MPI_INIT(mpi_err)
             call MPI_COMM_RANK(MPI_COMM_WORLD, mpi_id_world, mpi_err)
             call MPI_COMM_SIZE(MPI_COMM_WORLD, mpi_world_size, mpi_err)
             call MPI_GET_PROCESSOR_NAME(proc_name, mpi_name_string_size, mpi_err)
+
+            !
+            ! If master core, print status message, and determine the number of orbits in the data-file
+            !
 
             if (mpi_id_world .eq. 0) then
 
@@ -115,33 +171,39 @@ module variable_initialisation
 
             end if
 
-            ! First, broadcast the number of orbits
+            !
+            ! First, broadcast the number of orbits to all other workers
+            !
 
             call MPI_BCAST(num_orbits, STORAGE_SIZE(num_orbits), MPI_BYTE, 0, MPI_COMM_WORLD, mpi_err)
 
             num_orbits_dble = num_orbits
 
+            !
             ! Split the global communicator into smaller communicators,
             ! each of which defines a shared-memory region (each node)
+            !
 
             call MPI_COMM_SPLIT_TYPE(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, node_communicator, mpi_err)
             call MPI_COMM_RANK(node_communicator, mpi_id_shared, mpi_err)
             call MPI_COMM_RANK(MPI_COMM_WORLD, mpi_id_world, mpi_err)
 
-            ! Now create another communicator for *only* the procs that are masters
+            !
+            ! Now create another communicator for *only* the workers that are masters
             ! on their relative nodes
+            !
 
-           if (mpi_id_shared .eq. 0) then
+            if (mpi_id_shared .eq. 0) then
 
                mpi_color = 1               ! Want this to be in the communicator
 
-           else
+            else
 
                mpi_color = MPI_UNDEFINED   ! Do not want this to be in the communicator
 
-           end if
+            end if
 
-           call MPI_COMM_SPLIT(MPI_COMM_WORLD, mpi_color, 0, node_master_communicator, mpi_err)
+            call MPI_COMM_SPLIT(MPI_COMM_WORLD, mpi_color, 0, node_master_communicator, mpi_err)
 
             !
             ! Now we have three communicators: WORLD, intra-node, and node-masters
@@ -151,8 +213,6 @@ module variable_initialisation
 
             ! Allocate memory only for the node masters but NOT the one that has already allocated data
 
-            row_length = 7
-            row_length_perturbed = 6
             double_size = sizeof(dataset_double)
             
             if (mpi_id_shared .eq. 0) then
@@ -185,15 +245,20 @@ module variable_initialisation
 
             end if
 
+            !
             ! Now convert the C pointer to a Fortran pointer (syntax for accessing elements is the same as standard ALLOCATEd arrays)
-             
+            ! 
+
             call C_F_POINTER(dataset_pointer, dataset, (/num_orbits_dble, &
                                                         n_mnfd_disc_dble, &
                                                         row_length/))
             call C_F_POINTER(perturbed_conds_pointer, perturbed_conds_dataset, &
                 (/n_mnfd_disc_dble, num_orbits_dble, row_length_perturbed/))
   
+            !
+            ! Read in the dataset
             ! To avoid racing on the IO, have the global master _only_ read in the data
+            !
 
             if (mpi_id_world .eq. 0) then
 
@@ -202,7 +267,7 @@ module variable_initialisation
 
             end if
 
-            ! Tell all nodes to WAIT PLEASE, BACK BEHIND THE LINE
+            ! Wait until the read-in has finished
 
             call MPI_BARRIER(MPI_COMM_WORLD, mpi_err)
 
@@ -213,7 +278,7 @@ module variable_initialisation
             !
             ! Here, we eat the overheads and send 'stripes' of the dataset and perturbed_conds dataset out to
             ! the other node-masters. This will not overflow *our* dataset, and makes reassembling the data on the other end
-            ! far easier compared to using e.g. MPI structures (and to be honest, I cba to implement MPI STRUCTURES today)
+            ! far easier compared to using e.g. MPI structures (and to be honest, this works even though it's inelegant)
             !
             ! Provided all workers call this subroutine, then it is also blocking/synchronous
             ! 
@@ -250,20 +315,12 @@ module variable_initialisation
 
             end if
                 
-            ! Send perturbed_conds_dataset
-
-            !
-            ! Tell all nodes to wait for the node masters to finish writing their love letters to each other,
-            ! or break their hearts in a vice after running off with the dog ISN'T THAT RIGHT SCARLETT
-            !
-
             call MPI_BARRIER(MPI_COMM_WORLD, mpi_err)
 
             !
             ! Now send the number of candidates that we have to all of the other nodes
             !
 
-            host = 0
             call MPI_BCAST(num_candidates, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)    
             
             if (mpi_id_world .ne. 0) allocate(targ_can_array(num_candidates))
@@ -272,6 +329,21 @@ module variable_initialisation
             call MPI_BCAST(targ_can_array, size(targ_can_array), MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)
 
         end subroutine mpi_variable_init
+
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Determines the number of lines in the input data file.
+        !
+        ! REVISION HISTORY:
+        ! 20 Mar 2018 - Initial version
+        ! 3 Jul 2020 - Refactor; Doxygen Support
+        !
+        !--------------------------------------------------------------------------- 
 
         subroutine determine_num_orbits()
 
@@ -285,25 +357,41 @@ module variable_initialisation
 
             do
 
-              read(97,*,iostat=io_state)                                                  ! Not interested in contents yet
+                read(97,*,iostat=io_state)                                                  ! Not interested in contents yet
                
-              if (io_state .lt. 0) then                                                   ! If an error occured (likely EOF)
+                if (io_state .lt. 0) then                                                   ! If an error occured (likely EOF)
 
-                  exit                                                                    ! Do loop
+                    exit                                                                    ! Do loop
 
-              end if
+                end if
 
-              num_targets = num_targets + 1
+                num_targets = num_targets + 1
 
 	        end do
 
-           write(*, '(A)') "done."
+            write(*, '(A)') "done."
 
-           rewind(97)
+            rewind(97)
 
             num_orbits = num_targets / (n_mnfd_disc)
 
         end subroutine determine_num_orbits
+
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Initialises optimisation variables, opens target datasets, and loads
+        !! ephemerides
+        !
+        ! REVISION HISTORY:
+        ! 10 Oct 2019 - Initial version
+        ! 03 Jul 2020 - Refactor; add Doxygen
+        !
+        !--------------------------------------------------------------------------- 
 
         subroutine variable_init()
 
@@ -314,11 +402,13 @@ module variable_initialisation
             call FURNSH('../data/naif0008.tls')
             call FURNSH(ephemeris_prefix//targ_can//'.bsp')
 
+            !
+            ! Open input file
+            !
+
             open(iunit, file="../data/paretoFront_"//targ_can)
 
             ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
-
-            ! call GET_STATE(targ_can, time_lower, time_upper)
 
             call STR2ET('Jan 1 2025 00:00', time_lower)
             call STR2ET('Dec 30 2099 00:00', time_upper)
@@ -327,7 +417,7 @@ module variable_initialisation
 
             XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
             XL(2) = minimum_transfer_time                                                  ! Minimum transfer duration (seconds)
-            XL(3) = -50.d0                                                                ! t_end - 1500 days
+            XL(3) = -25.d0                                                                  ! t_end - 1500 days
             XL(4) = 1                                                                      ! n_mnfd
             XL(5) = 2                                                                      ! J
             XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
@@ -346,29 +436,24 @@ module variable_initialisation
 
             ! Printing options
 
-            print_eval = 1000
-            save_to_file = 0 ! Save solution to text files
+            print_eval = 1000       ! How often to print (MIDACO)
+            save_to_file = 0        ! Save solution to text files (MIDACO)
 
             ! Choose MIDACO parameters (FOR ADVANCED USERS)
 
-            PARAM( 1) = 0.0D0           ! ACCURACY
-            PARAM( 2) = 0.0D0           ! SEED
-            PARAM( 3) = 0.0D0           ! FSTOP
-            PARAM( 4) = 0.0D0           ! ALGOSTOP
-            PARAM( 5) = 0.0D0           ! EVALSTOP
-            PARAM( 6) = 100.D0          ! FOCUS
-            PARAM( 7) = 100.0D0           ! ANTS
-            PARAM( 8) = 50.0D0           ! KERNEL
-            PARAM( 9) = 0.0D0           ! ORACLE
-            PARAM(10) = 100000D0        ! PARETOMAX
-            PARAM(11) = 0.000001D0      ! EPSILON  
-            PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt)
-            PARAM(13) = 0.0D0           ! CHARACTER 
-
-            ! If the dataset has not been loaded, AND the core is a master core on any node (rank zero on its own
-            ! communicator), then load the dataset in here using the shared memory space as a target
-
-            ! if (.not. is_loaded .and. mpi_id_shared .eq. 0) call load_data()
+            PARAM( 1) = 0.0D0           ! ACCURACY (MIDACO)
+            PARAM( 2) = 0.0D0           ! SEED (MIDACO)
+            PARAM( 3) = 0.0D0           ! FSTOP (MIDACO)
+            PARAM( 4) = 0.0D0           ! ALGOSTOP (MIDACO)
+            PARAM( 5) = 0.0D0           ! EVALSTOP (MIDACO)
+            PARAM( 6) = 100.D0          ! FOCUS (MIDACO)
+            PARAM( 7) = 100.0D0         ! ANTS (MIDACO)
+            PARAM( 8) = 50.0D0          ! KERNEL (MIDACO)
+            PARAM( 9) = 0.0D0           ! ORACLE (MIDACO)
+            PARAM(10) = 100000D0        ! PARETOMAX (MIDACO)
+            PARAM(11) = 0.000001D0      ! EPSILON (MIDACO)
+            PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt) (MIDACO)
+            PARAM(13) = 0.0D0           ! CHARACTER (MIDACO)
 
             ! Prevent cores racing ahead to optimise over undefined memory
 
@@ -376,11 +461,42 @@ module variable_initialisation
 
         end subroutine variable_init
 
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Unloads relevant ephemerides; closes currently-used status file.
+        !
+        ! REVISION HISTORY:
+        ! 10 Oct 2019 - Initial version
+        ! 03 Jul 2020 - Refactor; Doxygen support
+        !
+        !--------------------------------------------------------------------------- 
+
         subroutine intermediate_variable_destruct()
 
             call UNLOAD(ephemeris_prefix//targ_can//'.bsp')
+            close(iunit)
 
         end subroutine intermediate_variable_destruct
+
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Initialises all variables needed to reset/restart a MIDACO run
+        !
+        ! REVISION HISTORY:
+        ! 10 Oct 2019 - Initial version
+        ! 4 Jul 2020 - Refactor; Doxygen support
+        !
+        !--------------------------------------------------------------------------- 
 
         subroutine intermediate_variable_init()
 
@@ -391,31 +507,33 @@ module variable_initialisation
 
             call FURNSH(ephemeris_prefix//targ_can//'.bsp')
 
+            !
             ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
-
-            ! call GET_STATE(targ_can, time_lower, time_upper)
-            
-            ! Optimiser bounds
+            !
 
             call STR2ET('Jan 1 2025 00:00', time_lower)
             call STR2ET('Dec 30 2099 00:00', time_upper)
 
-            XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            XL(2) = minimum_transfer_time                                                  ! Minimum transfer duration (seconds)
-            XL(3) = -50.d0                                                                ! t_end - 1500 days
-            XL(4) = 2                                                                      ! n_mnfd
-            XL(5) = 2                                                                      ! J
-            XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            XU(2) = maximum_transfer_time                                                  ! Maximum transfer epoch (seconds)
-            XU(3) = 0.d0                                                                   ! t_end - at the plane
-            XU(4) = n_mnfd_disc-1                                                          ! n_mnfd
-            XU(5) = num_orbits-1                                                           ! J
+            XL(1) = time_lower                                                          ! Minimum transfer epoch (ephemeris seconds)
+            XL(2) = minimum_transfer_time                                               ! Minimum transfer duration (seconds)
+            XL(3) = -25.d0                                                              ! t_end - 1500 days
+            XL(4) = 2                                                                   ! n_mnfd
+            XL(5) = 2                                                                   ! J
+            XU(1) = time_upper                                                          ! Maximum transfer epoch (ephemeris seconds)
+            XU(2) = maximum_transfer_time                                               ! Maximum transfer epoch (seconds)
+            XU(3) = 0.d0                                                                ! t_end - at the plane
+            XU(4) = n_mnfd_disc-1                                                       ! n_mnfd
+            XU(5) = num_orbits-1                                                        ! J
 
+            !
             ! Starting point, XOPT
+            !
 
             XOPT = (XL + XU)/2.d0
 
-            ! Maximum function evaluations
+            !
+            ! Maximum function evaluations (MIDACO)
+            !
 
             max_eval = 99999999
             optim_flag = 0
@@ -423,24 +541,28 @@ module variable_initialisation
 
             ! Printing options
 
-            print_eval = 100
-            save_to_file = 0 ! Save solution to text files
+            print_eval = 1000   ! How often to print (MIDACO)
+            save_to_file = 0    ! Save solution to text files (MIDACO)
 
             ! Choose MIDACO parameters (FOR ADVANCED USERS)
 
-            PARAM( 1) = 0.0D0           ! ACCURACY
-            PARAM( 2) = 0.0D0           ! SEED
-            PARAM( 3) = 0.0D0           ! FSTOP
-            PARAM( 4) = 0.0D0           ! ALGOSTOP
-            PARAM( 5) = 0.0D0           ! EVALSTOP
-            PARAM( 6) = 100.D0           ! FOCUS
-            PARAM( 7) = 1000.0D0         ! ANTS
-            PARAM( 8) = 50.0D0          ! KERNEL
-            PARAM( 9) = 0.0D0           ! ORACLE
-            PARAM(10) = 100000D0        ! PARETOMAX
-            PARAM(11) = 0.000001D0      ! EPSILON  
-            PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt)
-            PARAM(13) = 0.0D0           ! CHARACTER 
+            PARAM( 1) = 0.0D0           ! ACCURACY (MIDACO)
+            PARAM( 2) = 0.0D0           ! SEED (MIDACO)
+            PARAM( 3) = 0.0D0           ! FSTOP (MIDACO)
+            PARAM( 4) = 0.0D0           ! ALGOSTOP (MIDACO)
+            PARAM( 5) = 0.0D0           ! EVALSTOP (MIDACO)
+            PARAM( 6) = 100.D0          ! FOCUS (MIDACO)
+            PARAM( 7) = 1000.0D0        ! ANTS (MIDACO)
+            PARAM( 8) = 50.0D0          ! KERNEL (MIDACO)
+            PARAM( 9) = 0.0D0           ! ORACLE (MIDACO)
+            PARAM(10) = 100000D0        ! PARETOMAX (MIDACO)
+            PARAM(11) = 0.000001D0      ! EPSILON (MIDACO)
+            PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt) (MIDACO)
+            PARAM(13) = 0.0D0           ! CHARACTER (MIDACO)
+
+            !
+            ! Reset work arrays (MIDACO)
+            !
 
             iw = 0
             rw = 0.d0
@@ -449,6 +571,20 @@ module variable_initialisation
             temp = reset_midaco_run()
 
         end subroutine intermediate_variable_init
+
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Destroys all constructed MPI variables/pointers/dataspaces used.
+        !
+        ! REVISION HISTORY:
+        ! 10 Oct 2019 - Initial version
+        !
+        !--------------------------------------------------------------------------- 
 
         subroutine mpi_variable_destruct()
 
@@ -475,6 +611,19 @@ module variable_initialisation
 
         end subroutine mpi_variable_destruct
 
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Destroys/frees all pointers and data loaded in during the program execution.
+        !
+        ! REVISION HISTORY:
+        ! 20 Mar 2018 - Initial version
+        !--------------------------------------------------------------------------- 
+
         subroutine variable_destruct()
 
             ! ////////////////////////////////////////////////////////////
@@ -496,6 +645,21 @@ module variable_initialisation
 
         end subroutine variable_destruct
 
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Loads databases into memory.
+        !
+        ! REVISION HISTORY:
+        ! 20 Mar 2018 - Initial version
+        ! 04 Jul 2020 - Refactored; Doxygen
+        !
+        !--------------------------------------------------------------------------- 
+
         subroutine load_data()
 
             ! ////////////////////////////////////////////////////////////
@@ -514,14 +678,8 @@ module variable_initialisation
             ! Open file; set number of targets (== number of lines) to zero
 
             write(*, '(A)', advance="no") " Determining number of orbits in the data-file..."
-            num_targets = 0
             open(98, file=original_orbit_data)
 
-            ! ! Move from number of targets -> number of orbits
-
-            ! num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
-
-            ! write(*, *) "done."
             print *, "Number of target points is ", num_targets
             print *, "Number of orbits is ", num_orbits
             print *, "Number of n_mnfd is ", n_mnfd_disc
@@ -541,9 +699,9 @@ module variable_initialisation
 
                 do j = 1, n_mnfd_disc
 
-                        read(97, *) dataset(k, j, :) ! Dum == time
+                        read(97, *) dataset(k, j, :)
 
-    !                    read(98, *) perturbed_conds_dataset(j, k, :) ! Dum == time
+                       read(98, *) perturbed_conds_dataset(j, k, :)
 
                 end do ! j
 
@@ -560,6 +718,20 @@ module variable_initialisation
 
         end subroutine load_data
 
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Load the list of asteroids to optimise into memory.
+        !
+        ! REVISION HISTORY:
+        ! 20 Mar 2018 - Initial version
+        ! 04 Jul 2020 - Refactor; Doxygen.
+        !
+        !--------------------------------------------------------------------------- 
 
         subroutine load_targets()
 
@@ -594,7 +766,16 @@ module variable_initialisation
 
         end subroutine load_targets
 
-
+        !---------------------------------------------------------------------------  
+        !> @author 
+        !> Jack Tyler, University of Southampton
+        !
+        ! DESCRIPTION: 
+        !> Brief description of routine. 
+        !> @brief
+        !> Print a nice message to the screen.
+        !
+        ! --------------------------------------------------------------------------
         subroutine nice_printing()
 
             print *, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
@@ -604,7 +785,7 @@ module variable_initialisation
             print *, "                  Author: Jack Tyler                     "
             print *, "              Email: jack.tyler@soton.ac.uk              "
             print *, " "
-            print *, " This version last updated 2020-04-21                    "
+            print *, " This version last updated 2020-07-01                "
             print *, " "
             print *, " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
             print *, " "
@@ -613,7 +794,6 @@ module variable_initialisation
             print *, " "
             print *, "Input data-file: ", datafile
             print *, "Original orbit data:", original_orbit_data
-            print *, "Target candidate: ", targ_can
             print *, " "
             print *, "Beginning run "
             print *, "~~~~~~~~~~~~~ "
