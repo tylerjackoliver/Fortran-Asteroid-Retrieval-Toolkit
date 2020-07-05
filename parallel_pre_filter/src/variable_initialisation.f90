@@ -81,14 +81,13 @@ module variable_init
             end if
 
             ! First, broadcast the number of orbits
-#ifdef VERBOSE
 
             if (mpi_id_world .eq. 0) then 
 
                 print *, "Sending number of orbits, ", num_orbits
 
             end if
-#endif
+      
             call MPI_BCAST(num_orbits, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)
 
             ! Split the global communicator into smaller communicators,
@@ -170,7 +169,7 @@ module variable_init
             !
             ! Here, we eat the overheads and send 'stripes' of the dataset and perturbed_conds dataset out to
             ! the other node-masters. This will not overflow *our* dataset, and makes reassembling the data on the other end
-            ! far easier compared to using e.g. MPI structures (and to be honest, I cba to implement MPI STRUCTURES today)
+            ! far easier compared to using e.g. MPI structures. This is inefficient, but it works.
             !
             ! Provided all workers call this subroutine, then it is also blocking/synchronous
             ! 
@@ -259,7 +258,6 @@ module variable_init
             do i = 1, num_orbits
 
                 read(99, *) temp
-                ! print *, "temp", temp
             
                 !
                 ! Now we have the _synodic_, non-dimensional state, we need to convert to the global inertial frame
@@ -345,7 +343,7 @@ module variable_init
 
             integer :: iostate
 
-        ! Determine number of lines in the target dataset file
+            ! Determine number of lines in the target dataset file
 
             write(*, '(A)', advance='no') " Determining number of lines in the target dataset file..."
 

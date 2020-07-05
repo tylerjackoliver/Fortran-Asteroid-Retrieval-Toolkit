@@ -7,12 +7,12 @@ module utility_functions
 
     contains
 
-        subroutine GLOBAL_ROTATE(state_in, t, state_out)
+        subroutine global_rotate(state_in, t, state_out)
 
             ! //////////////////////////////////////////////////////
             !
-            ! Rotates state from the inertial frame (km, km/s) into
-            ! the synodic frame (dimensionless)
+            ! Rotates state from the synodic frame (dimensionless, dimensionless)
+            ! into the global frame (dimensionless, dimensionless)
             !
             ! //////////////////////////////////////////////////////
 
@@ -40,10 +40,6 @@ module utility_functions
 
             total_angle = theta_0 + (t * 2.d0 * pi) / (86400.d0 * 365.25d0)
 
-            ! Shift barycenter
-
-            state_out(1) = state_out(1) + mu3bp
-
             ! Pre-compute cos/sin of angle
 
             cang = cos(total_angle)
@@ -54,19 +50,27 @@ module utility_functions
             r = state_in(1:3)
             rdot = state_in(4:6)
 
+            !
+            ! Shift barycentre
+            !
+
+            r(1) = state_in(1) + mu3bp
+
             ! Construct T
 
-            t_ir(1,1) = cang; t_ir(1, 2) = sang; t_ir(1,3) = 0.0
-            t_ir(2,1) = -sang; t_ir(2,2) = cang; t_ir(2,3) = 0.0
-            t_ir(3,1) = 0.0; t_ir(3,2) = 0.0; t_ir(3,3) = 1.0
+            t_ir(1,1) = cang;   t_ir(1, 2) = sang;  t_ir(1,3) = 0.0
+            t_ir(2,1) = -sang;  t_ir(2,2) = cang;   t_ir(2,3) = 0.0
+            t_ir(3,1) = 0.0;    t_ir(3,2) = 0.0;    t_ir(3,3) = 1.0
 
             ! Construct T_dot
 
-            t_irdot(1,1) = -sang; t_irdot(1,2) = cang; t_irdot(1,3) = 0.0
-            t_irdot(2,1) = -cang; t_irdot(2,2) = -sang; t_irdot(2,3) = 0.0
-            t_irdot(3,1) = 0.0; t_irdot(3,2) = 0.0; t_irdot(3,3) = 0.0
+            t_irdot(1,1) = -sang;   t_irdot(1,2) = cang;    t_irdot(1,3) = 0.0
+            t_irdot(2,1) = -cang;   t_irdot(2,2) = -sang;   t_irdot(2,3) = 0.0
+            t_irdot(3,1) = 0.0;     t_irdot(3,2) = 0.0;     t_irdot(3,3) = 0.0
 
-            ! Multiply
+            !
+            ! Transpose (since this is the inertial -> synodic matrix) and multiply
+            !
 
             t_ir = transpose(t_ir)
             t_irdot = transpose(t_irdot)
@@ -74,6 +78,6 @@ module utility_functions
             state_out(1:3) = matmul(t_ir, r)
             state_out(4:6) = matmul(t_ir, rdot) + matmul(t_irdot, r)
 
-        end subroutine GLOBAL_ROTATE
+        end subroutine global_rotate
 
 end module utility_functions
