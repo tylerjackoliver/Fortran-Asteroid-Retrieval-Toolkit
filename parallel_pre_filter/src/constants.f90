@@ -4,7 +4,7 @@ module constants
   
   implicit none
 
-  double precision :: pi = 4.0_dp*datan(1.0_dp)
+  double precision :: pi = 4.0_dp*datan(1.d0)
 
   double precision :: mu = 1.32712440018e11 ! km^3/s^-2 
 
