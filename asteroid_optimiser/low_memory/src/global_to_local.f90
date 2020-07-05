@@ -1,6 +1,5 @@
 module local_optimisation
 
-     
     use constants
     use problem_parameters
     use variable_initialisation
@@ -31,7 +30,7 @@ module local_optimisation
             ! computing a local approximation
             !
             ! Therefore:    - Should get the pareto front for the current global optimisation
-            !               - Should then extract the (10?) most promising points from the Pareto front to move forward into local optimisation
+            !               - Should then extract the most promising points from the Pareto front to move forward into local optimisation
             !               - Reset MIDACO and provide new best-case runs
             !               - *Then* do the intermediate variable destruction 
             !
@@ -52,41 +51,58 @@ module local_optimisation
 
         subroutine initialise_bounds(number_of_local_solutions)
 
-            integer, intent(in) :: number_of_local_solutions
+            !
+            ! Populates an array of number_of_local_solutions-by-N with the upper and lower bounds for
+            ! that optimisation run.
+            !
 
-            integer             :: solution_number
-            integer             :: dim
-            double precision    :: tmp_swap
+            integer, intent(in) :: number_of_local_solutions        ! Number of solutions we desire
 
-            double precision    :: reference_lower_bound(5)
-            double precision    :: reference_upper_bound(5)
+            integer             :: solution_number                  ! Loop sentinel
+            integer             :: dim                              ! Loop sentinel
+            
+            double precision    :: tmp_swap                         ! Temporary variable for swapping two values in arrays
 
-            call STR2ET('2025 Jan 01 00:00', reference_lower_bound(1))
-            reference_lower_bound(2) = 1.d0 * 86400.
-            reference_lower_bound(3) = -250.d0
-            reference_lower_bound(4) = 2
-            reference_lower_bound(5) = 2
+            double precision    :: reference_lower_bound(N)         ! Holds global problem lower bound
+            double precision    :: reference_upper_bound(N)         ! Holds global problem upper bound
 
-            call STR2ET('2099 Dec 31 00:00', reference_upper_bound(1))
-            reference_upper_bound(2) = 1400.d0 * 86400
-            reference_upper_bound(3) = 0.d0                                               ! t_end - should be the *most negative* time of all pi/8 planes
-            reference_upper_bound(4) = n_mnfd_disc - 1
-            reference_upper_bound(5) = num_orbits - 1
+            !
+            ! Generate reference upper and lower bounds - i.e. local lower bounds cannot
+            ! be lower than the original problem lower bounds ( num_orbits < 1, for example )
+            !
 
-            allocate(lower_bounds(number_of_local_solutions, 5))
-            allocate(upper_bounds(number_of_local_solutions, 5))
+            reference_lower_bound = XL                              ! Set references as old XL/XU - won't have been updated yet
+            reference_upper_bound = XU
+
+            !
+            ! Allocate arrays to hold the new lower bounds for each local optimisation
+            !
+
+            allocate(lower_bounds(number_of_local_solutions, N))
+            allocate(upper_bounds(number_of_local_solutions, N))
+
+            !
+            ! Loop through the number of local solutions we have and compute the upper and lower bounds for them.
+            ! Set arbitrarily as +- 5%
+            !
 
             do solution_number = 1, number_of_local_solutions
 
                 lower_bounds(solution_number, :) = 0.95 * best_optimisation_candidates(solution_number, 2:6)
                 upper_bounds(solution_number, :) = 1.05 * best_optimisation_candidates(solution_number, 2:6)
 
+                !
+                ! 3rd design variable is -ve, so need to swap the upper/lower bounds entries
+                !
+
                 tmp_swap = lower_bounds(solution_number, 3)
 
                 lower_bounds(solution_number, 3) = upper_bounds(solution_number, 3) ! As 3 is negative
                 upper_bounds(solution_number, 3) = tmp_swap
 
+                !
                 ! Fix occasions where 1.2 or 0.8 x the solution would infringe on lower or upper bounds from the dataset
+                !
 
                 do dim = 1, 5
 

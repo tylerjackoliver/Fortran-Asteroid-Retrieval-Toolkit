@@ -9,3 +9,4 @@ corrected_oe/
 *.png
 */mod/*
 */lib/*
+*.mod

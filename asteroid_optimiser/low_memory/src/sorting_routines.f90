@@ -2,6 +2,8 @@ module sorting_routines
 
     implicit none
 
+    public  :: sort_array
+
     contains
 
     !
