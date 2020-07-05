@@ -48,18 +48,18 @@ PROGRAM MAIN
 
         end if
 
-        call run_global_optim()
-
         !
-        ! Change number of desired solutions if we don't have that many pareto points!
+        ! Your optimiser calls go here
         !
 
-        number_of_solutions = min(PF(1), real(number_of_desired_solutions))
+        do while (optim_stop .eq. 0)
 
-        call initialise_local_optim(number_of_solutions)
-        call run_local_optim()
+            call problem_function(F, X)
+            !
+            ! call my_optimiser_reverse_calling(F, X, ..)
+            !
 
-        call intermediate_variable_destruct()
+        end do
 
     end do
         
@@ -69,62 +69,11 @@ PROGRAM MAIN
 
 contains
 
-    subroutine run_local_optim()
-
-        use iso_fortran_env, only: output_unit
-
-        integer :: solution_number
-
-        do solution_number = 1, number_of_solutions
-
-            call initialise_local_variables(solution_number) ! Initialise bounds etc
-            
-            do while (optim_stop .eq. 0)
-
-                ! Evaluate objective function and constraints (none)
-
-                call problem_function(f, xopt)
-
-                ! Call MIDACO
-
-                call midaco(1, O, N, NI, M, ME, XOPT, F, G, XL, XU, optim_flag, optim_stop, &
-                            param, rw, lrw, iw, liw, pf, lpf, save_to_file, max_eval, &
-                            local_time, print_eval)
-
-            end do
-
-            call get_pareto_front() ! With new PF etc
-            
-            call destroy_local_variables()
-
-            write(*, '(A, I2, A, I2)') "Completed locally optimising condition ", solution_number, " of ", &
-                                        number_of_solutions
-
-        end do
-
-    end subroutine run_local_optim
-
-    subroutine run_global_optim()
-
-        do while (optim_stop .eq. 0) 
-
-            ! Evaluate objective function and constraints (none)
-
-            call problem_function(f, xopt)
-
-            ! Call MIDACO
-
-            call midaco(1, O, N, NI, M, ME, XOPT, F, G, XL, XU, optim_flag, optim_stop, &
-                        param, rw, lrw, iw, liw, pf, lpf, save_to_file, max_eval, &
-                        max_time, print_eval)
-
-        end do
-
-    end subroutine run_global_optim
+    !
+    ! Call problem function; populate result arrays
+    !
 
     subroutine problem_function(F, X)
-
-        ! Output: F, given contraints G and X
 
         implicit none
 
@@ -139,6 +88,10 @@ contains
         F(2) = x(2)            ! tt - ignored, only for Pareto front
 
     end subroutine problem_function
+
+    !
+    ! Cost function
+    !
 
     SUBROUTINE FUNCT(X, MIN_VEL)
 
@@ -158,10 +111,10 @@ contains
         !
         ! ///////////////////////////////////////////////////////////
 
-        use constants                                                               ! Standardises constants
-        use state_determination                                                     ! Use the state determination routines (self-written)
-        use fortran_astrodynamics_toolkit                                           ! Use the FAT, third-party astrodynamics library
-        use problem_parameters                                                      ! Problem set-up parameters
+        use constants                                                                           ! Standardises constants
+        use state_determination                                                                 ! Use the state determination routines (self-written)
+        use fortran_astrodynamics_toolkit                                                       ! Use the FAT, third-party astrodynamics library
+        use problem_parameters                                                                  ! Problem set-up parameters
         use compute_spline
         use variable_initialisation
 
@@ -190,13 +143,6 @@ contains
         n_mnfd          = x(4)
         orbit_choice    = x(5)
 
-        ! if (x(1) .lt. 0 .or. x(2) .lt. 0 .or. x(4) .lt. 0) then
-
-        !     min_vel = 1.d6
-        !     RETURN
-
-        ! end if
-
         ! Compute the candidate position
 
         call CANDIDATE_POSITION(transfer_epoch, state_can)
@@ -212,11 +158,6 @@ contains
         ! Rotate into the global frame
 
         call GLOBAL_ROTATE(state_targ, transfer_epoch+tt, state_rot) ! Rotate in at correct ephemeris seconds (tied to zero epoch)
-
-        ! Dimensionalise
-
-        state_dim(1:3) = state_rot(1:3) * position_dimensionalise_quotient
-        state_dim(4:6) = state_rot(4:6) * velocity_dimensionalise_quotient
 
         !
         ! Now, call the lambert solver on state_rot (the target
