@@ -33,6 +33,7 @@ As part of ongoing research into Asteroid Retrieval in the CR3BP, the Fortran As
 * The Fortran Asteroid Retrieval Tool: Takes a given list of _retrieval candidates_ and optimises their transfers for minimum transfer velocity and whether the object can be considered an ERO.
 * The Pareto Front Generation Code: Takes a given input ERO and obtains its Pareto front.
 * A script, written in Expect, to automatically extract epehemerides from the JPL HORIZONS system.
+* MIDACO Wrappers, designed to interface C versions of MIDACO with Fortran objective function codes.
 
 All of the codes are written in Fortran, with small interfaces to C++, and parallelised using the OpenMPI and MPI parallel programming paradigms. The problems are embarassingly parallel and scale nearly linearly with core count. **Basic Python versions of the Asteroid Retrieval _Tool_ are available on request.**
 
@@ -49,7 +50,7 @@ All of the codes are written in Fortran, with small interfaces to C++, and paral
 
 Both the Astrodynamics toolkit and B-Spline library are kindly provided by [Jacob Williams](https://github.com/jacobwilliams); his codes also depend on [FoBiS.py](https://github.com/szaghi/FoBiS), an automated build library for Fortran written in Python.
 
-`gfortran` and `g++` are the officially-supported compilers. In theory, the Intel Compilers should also work, but use at your own risk.
+`gfortran`, `gcc` and `g++` are the officially-supported compilers. In theory, the Intel Compilers should also work, but use at your own risk.
 
 <!-- GETTING STARTED -->
 ## Getting Started
