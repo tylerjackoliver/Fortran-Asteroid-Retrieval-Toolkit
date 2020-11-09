@@ -22,7 +22,7 @@ Dependencies should be compiled for your machine, with the library files placed 
 
 ### Usage instructions
 
-Create a folder called data/ in the root directory of the optimiser. In it, the following files should be placed:
+Create a folder called data/ in the root directory of the program. In it, the following files should be placed:
 
   * A valid planetary ephemeris file (for example, DE430s.)
   * A valid leapseconds file (for example, naif0008.)
