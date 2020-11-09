@@ -1,8 +1,6 @@
-# Parallel Asteroid Pre-Filtering Tool
+# The Fortran Asteroid Prefilter
 
-This program implements a shared-memory-parallelized version of the Fortran Asteroid Prefilter (FAP).
-
-Uses [MIDACO](https://midaco-solver.com) to perform a pre-filtering scan on candidate asteroids from the Minor Bodies Database.
+This program implements the prefiltering methodology for identifying _retrieval candidates_ from a given list of NEOs. The methodology was originally developed in Sánchez, J. P., & García Yárnoz, D. (2016). Asteroid retrieval missions enabled by invariant manifold dynamics. Acta Astronautica, 127, 667–677. https://doi.org/10.1016/j.actaastro.2016.05.034.
 
 ### Build Instructions
 
@@ -26,10 +24,10 @@ Dependencies should be compiled for your machine, with the library files placed 
 
 Create a folder called data/ in the root directory of the optimiser. In it, the following files should be placed:
 
-  * de414.bsp
-  * naif0008.tls
-  * Ephemeris files for any of the desired candidates.
-  * Data files for the manifold conditions; csv files with size n x 7, containing the backwards integration time in the synodic frame in column one, and the state vector in the remaining columns, where the units are in the synodic frame of the CR3BP
+  * A valid planetary ephemeris file (for example, DE430s.)
+  * A valid leapseconds file (for example, naif0008.)
+  * Ephemeris files for any of the desired candidates. These may be downloaded using the `get_ephemeris` script located in this repository.
+  * Data files for the manifold conditions; csv files with size n x 7, containing the backwards integration time in the synodic frame in column one, and the state vector in the remaining columns, where the units are in the synodic frame of the CR3BP.
 
 The file `problem_parameters.f90` can then be adjusted to your particular problem.
 
