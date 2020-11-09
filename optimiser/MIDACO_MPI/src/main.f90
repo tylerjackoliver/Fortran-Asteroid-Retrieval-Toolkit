@@ -15,97 +15,220 @@ PROGRAM MAIN
 
     implicit none
 
-    integer      :: target_count
-    character(7) :: targ_can_temp
-    
-    logical      :: first_load = .true.
+    integer             :: target_time_array
+    integer             :: target_count ! For now, fix to be only one candidate at a time
+    integer             :: tt_counter
+    integer             :: initial_tt
+
+    character(7)        :: targ_can_temp
+    character(10)       :: tt_str
+
+    character(4)        :: direction_str
+    integer             :: direction, direction_temp
+    integer             :: loop_bound    
+
+    logical             :: first_load = .true.
+
+    double precision    :: initial_xopt(4), temp
 
     ! Initialise MPI functionality; read-in datasets
 
     call MPI_VARIABLE_INIT()
-	print *, "here1"    
-    ! Perform the chunk of our work for the dataset
 
-    do target_count = (mpi_id_world+1), size(targ_can_array), mpi_world_size
+    !
+    ! Open the file with the target candidate solutions in it
+    !
 
-        write(targ_can_temp, '(I7)'), targ_can_array(target_count)
+    do tt_counter = initial_tt, loop_bound, 3 * direction
 
-        targ_can = trim(targ_can_temp)
+        transfer_time = transfer_time_array(tt_counter)
+
+        write(tt_str, '(I4)') tt_counter
+        print *, "Time", tt_str
 
         if (first_load) then
-		print *, "here 2"
-            call variable_init()
-            first_load = .false.    
-		print *, "here 3"
+
+                call variable_init()
+                first_load = .false.
+
         else
 
-            call intermediate_variable_init()
+                call intermediate_variable_init()
 
         end if
-	print *, "ere 4"
-        call run_optim()
-    print *, "ere 5"
-        call get_pareto_front()
-    print *, "here 6"
+
+        ! First run, completely from scratch
+
+        call run_global_optim()
+
+        if (mpi_id_world .eq. 0) then
+
+        call funct(xopt, pareto_front_minimum)
+        write(iunit, *) pareto_front_minimum, tt_counter, xopt
+
+        end if
+       
+        initial_xopt = xopt
+
         call intermediate_variable_destruct()
-    print *, "here 7"
+
     end do
-    print *, "here 8"
+        
     call MPI_BARRIER(MPI_COMM_WORLD, mpi_err)
 
-    ! Exit gracefully
+    call MPI_FINALIZE(mpi_err)
 
-    call MPI_VARIABLE_DESTRUCT()
+    ! call MPI_VARIABLE_DESTRUCT()
 
 contains
 
-    subroutine run_optim()
+    subroutine run_global_optim()
 
-        use iso_fortran_env, only : output_unit
+        !! MIDACO-internal parallelism variables
 
-        ! Print header
+        integer             :: variable_num
+        integer             :: thread_num
+        integer             :: P                    ! Number of threads
+        integer             :: status(MPI_STATUS_SIZE)
+        integer             :: MINIMUM_LOCATION
 
-!        call midaco_print(1, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
-!                        XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
+        ! Main results arrays
+        
+        double precision    :: XOPT_PAR(1000)     ! Increase alloc. if necessary
+        double precision    :: F_PAR(100)          ! Increase alloc. if necessary
+        double precision    :: G_PAR(100)          ! Increase alloc.
 
-        do while (optim_stop .eq. 0) 
+        ! Result/design arrays for slaves
 
-            ! Evaluate objective function and constraints (none)
+        double precision    :: DX(N), DF(N), DG(N)  ! XOPT, F, G OUT
+        double precision    :: EX(N), EF(N), EG(N)  ! XOPT, F, G OUT
 
-            call problem_function(f, xopt)
+        ! For randomly assigning initial conditions
 
-            ! Call MIDACO
+        double precision    :: DIFFERENCE_VECTOR(4) ! FOR XU - XL
+        double precision    :: eta                  ! How far along (0 <= x < 1)
 
-            call midaco(1, O, N, NI, M, ME, XOPT, F, G, XL, XU, optim_flag, optim_stop, &
-                        param, rw, lrw, iw, liw, pf, lpf, save_to_file, max_eval, &
-                        max_time, print_eval)
+        DIFFERENCE_VECTOR = XU - XL
+        P = mpi_world_size
 
-            ! Print again
+        ! If master, initialise MPI and run
 
-            ! call midaco_print(2, print_eval, save_to_file, optim_flag, optim_stop, F, G, XOPT, &
-            ! XL, XU, O, N, NI, M, ME, RW, PF, max_eval, max_time, param, 1, 0, key)
+        if (mpi_id_world .eq. 0) then
 
-    end do
+            !
+            ! Copy the starting point XOPT into parallel array XOPT_PAR
+            !
 
-    end subroutine run_optim
+            do thread_num = 2, P
+
+                do variable_num = 1, N
+
+                    call RANDOM_NUMBER(eta)
+                    XOPT_PAR((thread_num-1)*N+variable_num) = XL(variable_num) + &
+                        DIFFERENCE_VECTOR(variable_num) * eta
+
+                end do
+
+            end do
+
+            ! Wonderful - now call MPI as master
+
+            do while (optim_stop .eq. 0)
+
+                ! Store variables XOPT in dummy DX, send to slaves
+
+                do thread_num = 2, P
+
+                    do variable_num = 1, N
+
+                        DX(variable_num) = XOPT_PAR((thread_num-1)*N+variable_num)
+
+                    end do
+
+                    ! Blocking send
+
+                    CALL MPI_SEND(DX, N, MPI_DOUBLE_PRECISION, thread_num-1, 1, &
+                        MPI_COMM_WORLD, mpi_err)
+
+                end do
+
+                ! Evaluate on master
+
+                call problem_function(F_PAR, XOPT_PAR)
+
+                ! Collect other results
+
+                do thread_num = 2, P
+
+                    call MPI_RECV(DF, O, MPI_DOUBLE_PRECISION, thread_num-1,2,&
+                        MPI_COMM_WORLD, status, mpi_err)
+
+                    do variable_num = 1, O
+
+                        F_PAR((thread_num-1)*O+variable_num) = DF(variable_num)
+
+                    end do
+
+                end do
+
+                ! Call MIDACO
+
+                call MIDACO(P, O, N, NI, M, ME, XOPT_PAR, F_PAR, G_PAR, XL, XU, optim_flag, &
+                    optim_stop, param, rw, lrw, iw, liw, pf, lpf, save_to_file, max_eval, &
+                    max_time, print_eval)
+       
+
+                do thread_num = 2, P
+
+                    call MPI_SEND(optim_stop, 1, MPI_INTEGER, thread_num-1,&
+                        4, MPI_COMM_WORLD, mpi_err)
+
+                end do
+
+            end do
+
+        else
+
+            optim_stop = 0
+
+            do while (optim_stop .eq. 0)
+
+                call MPI_RECV(EX, N, MPI_DOUBLE_PRECISION, 0, 1, &
+                    MPI_COMM_WORLD, STATUS, mpi_err)
+                call problem_function(EF, EX)
+                
+                call MPI_SEND(EF, O, MPI_DOUBLE_PRECISION, 0, 2, &
+                    MPI_COMM_WORLD, mpi_err)
+
+                call MPI_RECV(optim_stop, 1, MPI_INTEGER, 0, 4, &
+                    MPI_COMM_WORLD, status, mpi_err)
+
+            end do
+
+        end if
+
+        ! Initialise XOPT to best from last
+
+        XOPT = XOPT_PAR(1:N)
+
+    end subroutine run_global_optim
 
     subroutine problem_function(F, X)
 
         ! Output: F, given contraints G and X
 
-        use precision_kinds
+         
 
         implicit none
 
-        double precision, intent(out)   :: F(2)
-        double precision, intent(in)    :: X(5)
+        double precision, intent(out)   :: F(O)
+        double precision, intent(in)    :: X(N)
 
-        double precision :: min_vel
+        double precision                :: min_vel
 
         call funct(x, min_vel) ! deltaV
 
         F(1) = min_vel
-        F(2) = x(2)            ! tt - ignored, only for Pareto front
 
     end subroutine problem_function
 
@@ -127,7 +250,7 @@ contains
         !
         ! ///////////////////////////////////////////////////////////
 
-        use precision_kinds                                                         ! Defines appropriate variable kinds for double and quadruple precision
+                                                                  ! Defines appropriate variable kinds for double and quadruple precision
         use constants                                                               ! Standardises constants
         use state_determination                                                     ! Use the state determination routines (self-written)
         use fortran_astrodynamics_toolkit                                           ! Use the FAT, third-party astrodynamics library
@@ -137,7 +260,7 @@ contains
 
         implicit none
 
-        double precision		                                :: x(5)                         ! Input state vector
+        double precision		                                :: x(N)                         ! Input state vector
         double precision                                        :: state_can(6)                 ! Asteroid candidate state
         double precision		                                :: state_targ(6)                ! Un-rotated target state
         double precision                                        :: state_dim(6)
@@ -154,6 +277,7 @@ contains
         double precision	                                    :: transfer_v1, transfer_v2     ! Departure velocity of Lambert transfer, insertion velocity of Lambert transfer
         double precision		                                :: transfer_vel                 ! Transfer velocities
         double precision		                                :: min_vel                      ! Minimum velocity transfer
+        double precision                                        :: upper_limit_time
 
         logical                                                 :: long_way						! Which direction for the Lambert transfer
         logical                                                 :: run_ok                       ! Boolean success variable for the Lambert
@@ -170,17 +294,11 @@ contains
         ! Initialise variables from input vector
 
         transfer_epoch  = x(1)
-        tt              = x(2)
-        t_end           = x(3)
-        n_mnfd          = x(4)
-        orbit_choice    = x(5)
+        t_end           = x(2)
+        n_mnfd          = x(3)
+        orbit_choice    = x(4)
 
-        if (x(1) .lt. 0 .or. x(2) .lt. 0 .or. x(4) .lt. 0) then
-
-            min_vel = 1.d6
-            RETURN
-
-        end if
+        tt = transfer_time * 86400.d0
 
         ! Initialise velocities
 
@@ -194,20 +312,26 @@ contains
 
         ! Get states via interpolation of the dataset
 
-        call BSPLINE_INTERPOLATE_STEP(t_end, n_mnfd, orbit_choice, state_targ)
+        call BSPLINE_INTERPOLATE(n_mnfd, orbit_choice, state_targ)
 
-        ! Rotate into the synodic frame
+        ! print *, state_targ
 
-        call GLOBAL_ROTATE(state_targ, transfer_epoch, state_dim)
+        ! Integrate this backwards by t_end
+
+        call integrate(state_targ, t_end)
+
+        ! print *, state_targ
+
+        ! Rotate into the global frame
+
+        call GLOBAL_ROTATE(state_targ, transfer_epoch+tt, state_dim) ! 0 => Rotate in at zero ephemeris seconds (tied to zero epoch)
 
         ! Dimensionalise
 
         state_dim(1:3) = state_dim(1:3) * position_dimensionalise_quotient
         state_dim(4:6) = state_dim(4:6) * velocity_dimensionalise_quotient
 
-        ! Rotate the state above via the relations in sanchez et. al.
-
-        call ROTATOR(state_dim, transfer_epoch, tt, state_rot)
+        state_rot = state_dim
 
         ! Define initial and final velocities of the target and of
         ! the candidate
@@ -227,8 +351,6 @@ contains
         ! TODO: Make this a function
 
         long_way = .false.
-
-        ! print *, state_rot
 
         call solve_lambert_izzo(state_can(1:3), state_rot(1:3), tt, mu, long_way, multi_rev, v1, v2, run_ok)
 

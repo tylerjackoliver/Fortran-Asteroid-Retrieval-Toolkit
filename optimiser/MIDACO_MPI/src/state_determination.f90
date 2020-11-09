@@ -31,7 +31,7 @@ module state_determination
                 !
                 ! /////////////////////////////////////////////////////////
 
-                use precision_kinds
+                 
                 use constants
 
                 implicit none
@@ -140,7 +140,7 @@ module state_determination
 
             subroutine time_str(str_in, time_out)
 
-                use precision_kinds
+                 
 
                 CHARACTER(*), intent(in) :: str_in
 
@@ -158,7 +158,7 @@ module state_determination
                 ! This subroutine assumes that the time variables are
                 ! inputted as ephemeris time
 
-                use precision_kinds
+                 
                 use problem_parameters ! Gives access to targ_can
 
                 double precision, intent(in)   :: t_epoch                               ! Initial time
@@ -182,7 +182,7 @@ module state_determination
 
             subroutine ROTATOR(state_in, epoch, tt, state_out)
 
-                use precision_kinds
+                 
                 use constants
 
                 double precision, intent(in)   :: state_in(6)
@@ -225,7 +225,7 @@ module state_determination
                 !
                 ! //////////////////////////////////////////////////////
 
-                use precision_kinds
+                 
                 use constants
 
                 double precision, intent(in)   :: state_in(6)
@@ -234,7 +234,7 @@ module state_determination
                 double precision, intent(out)  :: state_out(6)
 
                 double precision               :: r(3), rdot(3)
-                double precision, parameter    :: theta_0 = 100.3762 * 3.141592 / 180.d0           ! Angle of the Earth at J2000
+                double precision, parameter    :: theta_0 = 100.3762 * pi / 180.d0           ! Angle of the Earth at J2000
 
                 double precision               :: t_ir(3, 3)
                 double precision               :: t_irdot(3, 3)
@@ -289,7 +289,7 @@ module state_determination
                 !
                 ! //////////////////////////////////////////////////////
 
-                use precision_kinds
+                 
                 use constants
 
                 double precision, intent(in)    :: state_in(6)

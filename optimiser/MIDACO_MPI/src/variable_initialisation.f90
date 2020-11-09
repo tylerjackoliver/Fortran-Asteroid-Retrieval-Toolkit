@@ -9,19 +9,19 @@ module variable_initialisation
 
     implicit none
 
-    integer, parameter                  :: O = 2                                                        ! Number of objectives
-    integer, parameter                  :: N = 5                                                        ! Number of variables
+    integer, parameter                  :: O = 1                                                        ! Number of objectives
+    integer, parameter                  :: N = 4                                                        ! Number of variables
     integer, parameter                  :: NI = 0                                                       ! Number of integer variables
     integer, parameter                  :: M = 0                                                        ! Number of contrains
     integer, parameter                  :: ME = 0                                                       ! Number of equality constraints
-    integer, parameter                  :: LIW = 5000                                                   ! Integer workspace
-    integer, parameter                  :: LRW = 20000                                                  ! Real workspace
+    integer, parameter                  :: LIW = 30000                                                   ! Integer workspace
+    integer, parameter                  :: LRW = 30000                                                  ! Real workspace
     integer, parameter                  :: LPF = 2000000                                                  ! Number of pareto front
 
-    double precision                    :: XL(5), XU(5)                                                 ! Upper and lower bounds
-    double precision                    :: XOPT(5)                                                      ! OPtimisation variables
-    double precision                    :: F(2)                                                         ! Objectives
-    double precision                    :: G(4)                                                         ! Constraint arrays; initialised but never used
+    double precision                    :: XL(N), XU(N)                                                 ! Upper and lower bounds
+    double precision                    :: XOPT(N)                                                      ! OPtimisation variables
+    double precision                    :: F(O)                                                         ! Objectives
+    double precision                    :: G(O)                                                         ! Constraint arrays; initialised but never used
     double precision                    :: PARAM(13)                                                    ! MIDACO parameters
     double precision                    :: RW(LRW), PF(LPF)                                             ! Workspace and pareto front
 
@@ -42,14 +42,15 @@ module variable_initialisation
     integer, allocatable                :: candidates_to_consider(:)
 
     character*60                        :: key                                                          ! License key bit
+    character*3                         :: run_counter_str
 
     double precision                    :: time_lower                                                   ! Lower bound for the optimisation time - dummy here
     double precision                    :: time_upper                                                   ! Upper bound for the optimisation time - dummy here
 
     logical                             :: is_loaded = .false.
 
-    integer(8) :: num_targets ! Number of items in the input file
-    integer(8) :: num_orbits ! Number of orbits in the file
+    integer(8)                          :: num_targets ! Number of items in the input file
+    integer(8)                          :: num_orbits ! Number of orbits in the file
     integer(8)                          :: num_orbits_dble
 
     Integer                             :: iunit                                                        ! Unit for the Pareto file
@@ -117,25 +118,7 @@ module variable_initialisation
 
             ! First, broadcast the number of orbits
 
-#ifdef DEBUG
-
-            if (mpi_id_world .eq. 0) then 
-
-                print *, "Sending number of orbits, ", num_orbits
-
-            end if
-
-            call MPI_BARRIER(MPI_COMM_WORLD, mpi_err)
-
-#endif
-
             call MPI_BCAST(num_orbits, STORAGE_SIZE(num_orbits), MPI_BYTE, 0, MPI_COMM_WORLD, mpi_err)
-
-#ifdef DEBUG
-
-            print *, "I am rank", mpi_id_world, "and I have the number of orbits as", num_orbits
-
-#endif
 
             num_orbits_dble = num_orbits
 
@@ -146,26 +129,20 @@ module variable_initialisation
             call MPI_COMM_RANK(node_communicator, mpi_id_shared, mpi_err)
             call MPI_COMM_RANK(MPI_COMM_WORLD, mpi_id_world, mpi_err)
 
-#ifdef DEBUG
-
-            print *, "I am global rank", mpi_id_world, "rank", mpi_id_shared, "on proc", proc_name
-
-#endif
-
             ! Now create another communicator for *only* the procs that are masters
             ! on their relative nodes
 
-           if (mpi_id_shared .eq. 0) then
+            if (mpi_id_shared .eq. 0) then
 
                mpi_color = 1               ! Want this to be in the communicator
 
-           else
+            else
 
                mpi_color = MPI_UNDEFINED   ! Do not want this to be in the communicator
 
-           end if
+            end if
 
-           call MPI_COMM_SPLIT(MPI_COMM_WORLD, mpi_color, 0, node_master_communicator, mpi_err)
+            call MPI_COMM_SPLIT(MPI_COMM_WORLD, mpi_color, 0, node_master_communicator, mpi_err)
 
             !
             ! Now we have three communicators: WORLD, intra-node, and node-masters
@@ -181,7 +158,7 @@ module variable_initialisation
             
             if (mpi_id_shared .eq. 0) then
 
-                dataset_size_bytes = int(num_orbits * t_end_disc * n_mnfd_disc * row_length * double_size, MPI_ADDRESS_KIND)
+                dataset_size_bytes = int(num_orbits * n_mnfd_disc * row_length * double_size, MPI_ADDRESS_KIND)
                 perturbed_conds_size_bytes = int(num_orbits * row_length_perturbed * n_mnfd_disc * double_size, MPI_ADDRESS_KIND)
             
 
@@ -211,8 +188,9 @@ module variable_initialisation
 
             ! Now convert the C pointer to a Fortran pointer (syntax for accessing elements is the same as standard ALLOCATEd arrays)
              
-            call C_F_POINTER(dataset_pointer, dataset, (/t_end_disc_dble, n_mnfd_disc_dble, &
-                                                        num_orbits_dble, row_length/))
+            call C_F_POINTER(dataset_pointer, dataset, (/num_orbits_dble, &
+                                                        n_mnfd_disc_dble, &
+                                                        row_length/))
             call C_F_POINTER(perturbed_conds_pointer, perturbed_conds_dataset, &
                 (/n_mnfd_disc_dble, num_orbits_dble, row_length_perturbed/))
   
@@ -236,42 +214,27 @@ module variable_initialisation
             !
             ! Here, we eat the overheads and send 'stripes' of the dataset and perturbed_conds dataset out to
             ! the other node-masters. This will not overflow *our* dataset, and makes reassembling the data on the other end
-            ! far easier compared to using e.g. MPI structures (and to be honest, I cba to implement MPI STRUCTURES today)
+            ! far easier compared to using e.g. MPI structures
             !
             ! Provided all workers call this subroutine, then it is also blocking/synchronous
             ! 
 
             if (mpi_id_shared .eq. 0) then
 
-#ifdef DEBUG
-
-                print *, "Rank ", mpi_id_world, "is sending data"
-
-#endif
-
                 host = 0
 
-                do i = 1, t_end_disc
+                do j = 1, n_mnfd_disc
 
-                    do j = 1, n_mnfd_disc
+                    do k = 1, num_orbits
 
-                        do k = 1, num_orbits
-                    ! Send dataset
+                        call MPI_BCAST(dataset(k, j, :), STORAGE_SIZE(dataset(k, j, :)/8), MPI_byte, host, &
+                                        node_master_communicator, mpi_err)  
+                    
+                    end do
 
-                            to_send_size = size(dataset(i, :, :,:))
- !                   call MPI_BCAST(dataset(i, :, :, :), to_send_size, MPI_DOUBLE_PRECISION, host, node_master_communicator, mpi_err)
-                            call MPI_BCAST(dataset(i, j, k, :), STORAGE_SIZE(dataset(i,j,k,:)/8), MPI_byte, host, &
-                                           node_master_communicator, mpi_err)  
-                        
-                       end do
-
-                   end do
+                end do
 
                   
-                end do
-                
-                print *, "Rank", mpi_id_world, n_mnfd_disc
-
                 do i = 1, n_mnfd_disc
 
                         do j = 1, num_orbits
@@ -289,13 +252,6 @@ module variable_initialisation
             end if
                 
             ! Send perturbed_conds_dataset
-
-
-#ifdef DEBUG
-
-            print *, "rank", mpi_id_world, "has finished sending/receiving data"
-            
-#endif
 
             !
             ! Tell all nodes to wait for the node masters to finish writing their love letters to each other,
@@ -323,13 +279,16 @@ module variable_initialisation
 
             to_send_size = size(targ_can_array)
             call MPI_BCAST(targ_can_array, size(targ_can_array), MPI_INTEGER, 0, MPI_COMM_WORLD, mpi_err)
-#ifdef DEBUG
 
-            print *, "Rank: ", mpi_id_world, "has that bit o the dataset as", dataset(864, 90, 2, :), &
-                " and the bits before and after ", dataset(864, 90, 1, :), &
-                dataset(864, 90, 3, :)
+            !
+            ! Initialise array of transfer times
+            !
 
-#endif
+            do i = 1, 1500
+
+                transfer_time_array(i) = i
+
+            end do
 
         end subroutine mpi_variable_init
 
@@ -345,25 +304,25 @@ module variable_initialisation
 
             do
 
-               read(97,*,iostat=io_state)                                                  ! Not interested in contents yet
+              read(97,*,iostat=io_state)                                                  ! Not interested in contents yet
                
-               if (io_state .lt. 0) then                                                   ! If an error occured (likely EOF)
+              if (io_state .lt. 0) then                                                   ! If an error occured (likely EOF)
 
-                   exit                                                                    ! Do loop
+                  exit                                                                    ! Do loop
 
-               end if
+              end if
 
-               num_targets = num_targets + 1
+              num_targets = num_targets + 1
 
-	  end do
+	        end do
 
            write(*, '(A)') "done."
 
            rewind(97)
 
-            num_orbits = num_targets / (n_mnfd_disc * t_end_disc)
-!            num_orbits = 7987
-            ! num_targets = num_orbits * n_mnfd_disc * t_end_disc
+            num_orbits = num_targets / (n_mnfd_disc)
+            ! num_orbits = 25
+            ! num_targets = num_orbits * n_mnfd_disc
 
         end subroutine determine_num_orbits
 
@@ -371,57 +330,58 @@ module variable_initialisation
 
             ! Load SPICE kernels
 
+            character(5)     :: time_str
+            double precision :: delta(5)
+
+            write(run_counter_str, '(I2)') mpi_id_world
+
+
             iunit = 151+mpi_id_world
             call FURNSH('../data/de414.bsp')                    
             call FURNSH('../data/naif0008.tls')
             call FURNSH(ephemeris_prefix//targ_can//'.bsp')
-            open(iunit, file="../data/paretoFront_"//targ_can)
 
-            ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
+            write(time_str, '(I4)') int(transfer_time)
+            open(iunit, file="../"//targ_can//'_'//trim(adjustl(time_str))&
+                //'_parallel')
 
-            call GET_STATE(targ_can, time_lower, time_upper)
+            call STR2ET('Jan 1 2025 00:00', time_lower)
+            call STR2ET('Dec 30 2040 00:00', time_upper)
 
             ! Optimiser bounds
 
-            XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            XL(2) = minimum_transfer_time                                                  ! Minimum transfer duration (seconds)
-            XL(3) = maxval(dataset(1000,:,:,1))                                            ! t_end - should be the *least negative* backwards integration time of all orbits
-            XL(4) = 1                                                                      ! n_mnfd
-            XL(5) = 1                                                                      ! J
-            XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            XU(2) = maximum_transfer_time 						   ! Maximum transfer epoch (seconds)
-            XU(3) = maxval(dataset(1,:,:,1))                                               ! t_end - should be the *most negative* time of all pi/8 planes
-            XU(4) = n_mnfd_disc                                                            ! n_mnfd
-            XU(5) = num_orbits                                                             ! J
-
+            XL(1) = time_lower                                                              ! Minimum transfer epoch (ephemeris seconds)
+            XL(2) = -25.d0                                                                  ! t_end - 1500 days
+            XL(3) = 2                                                                       ! n_mnfd
+            XL(4) = 2                                                                       ! J
+            XU(1) = time_upper                                                              ! Maximum transfer epoch (ephemeris seconds)
+            XU(2) = 0.d0                                                                    ! t_end - at the plane
+            XU(3) = n_mnfd_disc                                                             ! n_mnfd
+            XU(4) = num_orbits-1                                                            ! J
 
             ! Starting point, XOPT
 
             XOPT = (XL + XU)/2.d0
 
-            print *, "Initial point", XOPT
-            
-            ! Maximum function evaluations
-
-            max_eval = 99999999
+            max_eval = 999999999
 
             ! Printing options
 
-            print_eval = 100
+            print_eval = 10000
             save_to_file = 0 ! Save solution to text files
 
             ! Choose MIDACO parameters (FOR ADVANCED USERS)
 
             PARAM( 1) = 0.0D0           ! ACCURACY
-            PARAM( 2) = 0.0D0           ! SEED
+            PARAM( 2) = 34.D0           ! SEED
             PARAM( 3) = 0.0D0           ! FSTOP
             PARAM( 4) = 0.0D0           ! ALGOSTOP
             PARAM( 5) = 0.0D0           ! EVALSTOP
             PARAM( 6) = 0.D0            ! FOCUS
-            PARAM( 7) = 0.0D0           ! ANTS
-            PARAM( 8) = 0.0D0           ! KERNEL
+            PARAM( 7) = 500.0D0         ! ANTS
+            PARAM( 8) = 100.0D0         ! KERNEL
             PARAM( 9) = 0.0D0           ! ORACLE
-            PARAM(10) = 100000D0        ! PARETOMAX
+            PARAM(10) = 10000D0         ! PARETOMAX
             PARAM(11) = 0.000001D0      ! EPSILON  
             PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt)
             PARAM(13) = 0.0D0           ! CHARACTER 
@@ -440,6 +400,7 @@ module variable_initialisation
         subroutine intermediate_variable_destruct()
 
             call UNLOAD(ephemeris_prefix//targ_can//'.bsp')
+            close(iunit)
 
         end subroutine intermediate_variable_destruct
 
@@ -448,26 +409,34 @@ module variable_initialisation
             use midaco_interface
             implicit none
 
-            integer :: temp
+            integer         :: temp       
+            character(5)    :: time_str     
+
+            iunit = 151+mpi_id_world
+
+            write(time_str, '(I4)') int(transfer_time)
+            open(iunit, file="../"//targ_can//'_'//trim(adjustl(time_str))&
+                //'_parallel')
 
             call FURNSH(ephemeris_prefix//targ_can//'.bsp')
 
             ! Initialise transfer epoch bounds - get the state of the candidate at correct epoch
 
-            call GET_STATE(targ_can, time_lower, time_upper)
+            ! call GET_STATE(targ_can, time_lower, time_upper)
             
             ! Optimiser bounds
 
-            XL(1) = time_lower                                                             ! Minimum transfer epoch (ephemeris seconds)
-            XL(2) = minimum_transfer_time                                                        ! Minimum transfer duration (seconds)
-            XL(3) = maxval(dataset(1000,:,:,1))                                            ! t_end - should be the *least negative* backwards integration time of all orbits
-            XL(4) = 1                                                                      ! n_mnfd
-            XL(5) = 1                                                                      ! J
-            XU(1) = time_upper                                                             ! Maximum transfer epoch (ephemeris seconds)
-            XU(2) = maximum_transfer_time                                                     ! Maximum transfer epoch (seconds)
-            XU(3) = maxval(dataset(1,:,:,1))                                               ! t_end - should be the *most negative* time of all pi/8 planes
-            XU(4) = n_mnfd_disc                                                            ! n_mnfd
-            XU(5) = num_orbits                                                                    ! J
+            call STR2ET('Jan 1 2025 00:00', time_lower)
+            call STR2ET('Dec 30 2040 00:00', time_upper)
+
+            XL(1) = time_lower                                                              ! Minimum transfer epoch (ephemeris seconds)
+            XL(2) = -25.d0                                                                  ! t_end - 1500 days
+            XL(3) = 2                                                                       ! n_mnfd
+            XL(4) = 2                                                                       ! J
+            XU(1) = time_upper                                                              ! Maximum transfer epoch (ephemeris seconds)
+            XU(2) = 0.d0                                                                    ! t_end - at the plane
+            XU(3) = n_mnfd_disc-2                                                             ! n_mnfd
+            XU(4) = num_orbits-1                                                            ! J
 
             ! Starting point, XOPT
 
@@ -481,24 +450,24 @@ module variable_initialisation
 
             ! Printing options
 
-            print_eval = 100
+            print_eval = 10000
             save_to_file = 0 ! Save solution to text files
 
             ! Choose MIDACO parameters (FOR ADVANCED USERS)
 
-            PARAM( 1) = 0.0D0           ! ACCURACY
-            PARAM( 2) = 0.0D0           ! SEED
-            PARAM( 3) = 0.0D0           ! FSTOP
-            PARAM( 4) = 0.0D0           ! ALGOSTOP
-            PARAM( 5) = 0.0D0           ! EVALSTOP
-            PARAM( 6) = 0.D0            ! FOCUS
-            PARAM( 7) = 0.0D0           ! ANTS
-            PARAM( 8) = 0.0D0           ! KERNEL
-            PARAM( 9) = 0.0D0           ! ORACLE
-            PARAM(10) = 100000D0        ! PARETOMAX
-            PARAM(11) = 0.000001D0      ! EPSILON  
-            PARAM(12) = -1.000D0        ! BALANCE => focus only on first objective function (DeltaV, not tt)
-            PARAM(13) = 0.0D0           ! CHARACTER 
+            PARAM( 1) = 0.0D0                       ! ACCURACY
+            PARAM( 2) = 34.d0                       ! SEED
+            PARAM( 3) = 0.0D0                       ! FSTOP
+            PARAM( 4) = 0.0D0                       ! ALGOSTOP
+            PARAM( 5) = 0.0D0                       ! EVALSTOP
+            PARAM( 6) = 0.D0                       ! FOCUS
+            PARAM( 7) = 500.0D0                     ! ANTS
+            PARAM( 8) = 100.0D0                     ! KERNEL
+            PARAM( 9) = 0.0D0                       ! ORACLE
+            PARAM(10) = 100000D0                    ! PARETOMAX
+            PARAM(11) = 0.000001D0                  ! EPSILON  
+            PARAM(12) = -1.000D0                    ! BALANCE => focus only on first objective function (DeltaV, not tt)
+            PARAM(13) = 0.0D0                       ! CHARACTER 
 
             iw = 0
             rw = 0.d0
@@ -599,13 +568,9 @@ module variable_initialisation
 
                 do j = 1, n_mnfd_disc
 
-                    do i = 1, t_end_disc
+                        read(97, *) dataset(k, j, :) ! Dum == time
 
-                        read(97, *) dataset(i, j, k, :) ! Dum == time
-
-                    end do ! i
-                        
-                    read(98, *) perturbed_conds_dataset(j, k, :) ! Dum == time
+    !                    read(98, *) perturbed_conds_dataset(j, k, :) ! Dum == time
 
                 end do ! j
 
@@ -613,13 +578,14 @@ module variable_initialisation
 
             ! Close file; set is_loaded to true.
 
+            perturbed_conds_dataset = 0.d0
+
             close(97)
             close(98)
 
             is_loaded = .true.
 
         end subroutine load_data
-
 
         subroutine load_targets()
 

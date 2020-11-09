@@ -1,11 +1,12 @@
 module ancillary_data
 
-    use precision_kinds
+     
     use constants
     use problem_parameters
     use variable_initialisation
     use fortran_astrodynamics_toolkit
     use compute_spline
+    use integrator
 
     implicit none
 
@@ -16,60 +17,70 @@ module ancillary_data
 
             implicit none
 
-            double precision, intent(in)                :: t_epoch
-            double precision, intent(in)                :: transfer_time
-            double precision, intent(in)                :: t_end
-            double precision, intent(in)                :: n_mnfd
+            double precision, intent(in)                        :: t_epoch
+            double precision, intent(in)                        :: transfer_time
+            double precision, intent(in)                        :: t_end
+            double precision, intent(in)                        :: n_mnfd
             
-            double precision, intent(in)                :: orbit_num
+            double precision, intent(in)                        :: orbit_num
 
-            double precision, intent(out)               :: r1(6)
-            double precision, intent(out)               :: v1O(3)
-            double precision, intent(out)               :: r2(6)
-            double precision, intent(out)               :: v2O(3)
-            double precision, intent(out)               :: target_point(6)
+            double precision, intent(out)                       :: r1(6)
+            double precision, intent(out)                       :: v1O(3)
+            double precision, intent(out)                       :: r2(6)
+            double precision, intent(out)                       :: v2O(3)
+            double precision, intent(out)                       :: target_point(6)
 
-            integer                                     :: i, j
+            integer                                             :: i, j
 
-            double precision                            :: state_can(6)                 ! Asteroid candidate state
-            double precision		                    :: state_targ(6)                ! Un-rotated target state
-            double precision		                    :: state_rot(6)                 ! Rotated target state
-            double precision		                    :: vx1, vx2, vy1, vy2, vz1, vz2 ! Velocities of the beginning and end of the Lambert arc
-            double precision		                    :: vtx, vty, vtz, vcx, vcy, vcz ! Velocities of the candidate and target at beginning and end of ""
-            double precision	                        :: transfer_v1, transfer_v2     ! Departure velocity of Lambert transfer, insertion velocity of Lambert transfer
-            double precision		                    :: transfer_vel                 ! Transfer velocities
-            double precision		                    :: min_vel                      ! Minimum velocity transfer
+            double precision                                    :: state_can(6)                 ! Asteroid candidate state
+            double precision		                            :: state_targ(6), state_dim(6)  ! Un-rotated target state
+            double precision		                            :: state_rot(6)                 ! Rotated target state
+            double precision		                            :: vx1, vx2, vy1, vy2, vz1, vz2 ! Velocities of the beginning and end of the Lambert arc
+            double precision		                            :: vtx, vty, vtz, vcx, vcy, vcz ! Velocities of the candidate and target at beginning and end of ""
+            double precision	                                :: transfer_v1, transfer_v2     ! Departure velocity of Lambert transfer, insertion velocity of Lambert transfer
+            double precision		                            :: transfer_vel                 ! Transfer velocities
+            double precision		                            :: min_vel                      ! Minimum velocity transfer
     
-            logical                                     :: long_way						! Which direction for the Lambert transfer
-            logical                                     :: run_ok                       ! Boolean success variable for the Lambert
+            logical                                             :: long_way						! Which direction for the Lambert transfer
+            logical                                             :: run_ok                       ! Boolean success variable for the Lambert
     
-            double precision, allocatable, dimension(:, :)        :: v1                           ! Velocity of beginning of Lambert arc
-            double precision, allocatable, dimension(:, :)        :: v2                           ! Velocity of the end of the Lambert arc
+            double precision, allocatable, dimension(:, :)      :: v1                           ! Velocity of beginning of Lambert arc
+            double precision, allocatable, dimension(:, :)      :: v2                           ! Velocity of the end of the Lambert arc
     
-            integer		                                :: multi_rev = 4                ! Number of Lambert arc revolutions (up to)
-            integer 	                                :: num_rows                     ! Size of the v1, v2 arrays
-            integer                                     :: best_index                   ! Best index of target state
-            integer                                     :: itercount = 0                ! Iteration counter
+            integer		                                        :: multi_rev = 4                ! Number of Lambert arc revolutions (up to)
+            integer 	                                        :: num_rows                     ! Size of the v1, v2 arrays
+            integer                                             :: best_index                   ! Best index of target state
+            integer                                             :: itercount = 0                ! Iteration counter
     
-            ! Initialise velocities
-    
+
             min_vel = 1.d6
-    
+
             ! Compute the candidate position
     
             call CANDIDATE_POSITION(t_epoch, state_can)
-
-            r1 = state_can
     
             ! Main iteration loop: go through the data file and compute Lamberts to that state
     
             ! Get states via interpolation of the dataset
+    
+            call BSPLINE_INTERPOLATE(n_mnfd, orbit_num, state_targ)
 
-            call BSPLINE_INTERPOLATE(t_end, n_mnfd, orbit_num, state_targ)
+            ! Integrate backward
 
+            call integrate(state_targ, t_end)
+    
+            ! Rotate into the global frame
+    
+            call GLOBAL_ROTATE(state_targ, 0.d0, state_dim)
+    
+            ! Dimensionalise
+    
+            state_dim(1:3) = state_dim(1:3) * position_dimensionalise_quotient
+            state_dim(4:6) = state_dim(4:6) * velocity_dimensionalise_quotient
+    
             ! Rotate the state above via the relations in sanchez et. al.
-
-            call ROTATOR(state_targ, t_epoch, transfer_time, state_rot)
+    
+            call ROTATOR(state_dim, t_epoch, transfer_time, state_rot)
 
             ! Define initial and final velocities of the target and of
             ! the candidate
@@ -194,13 +205,14 @@ module ancillary_data
 
             end do
 
-        call generate_target_point(t_end, n_mnfd, orbit_num, target_point)
+        r2 = state_targ
+        call b_spline_interpolate_perturbed_conds(n_mnfd, orbit_num, target_point)
 
     end subroutine generate_ancillary_data
 
     subroutine generate_target_point(t_end, n_mnfd, J, target_point)
 
-        use precision_kinds
+         
         use constants
         use problem_parameters
         use variable_initialisation
@@ -208,11 +220,11 @@ module ancillary_data
 
         implicit none
 
-        real(kind=dp), intent(in)               :: n_mnfd
-        real(kind=dp), intent(in)               :: t_end
-        real(kind=dp), intent(in)               :: J
+        double precision, intent(in)               :: n_mnfd
+        double precision, intent(in)               :: t_end
+        double precision, intent(in)               :: J
 
-        real(kind=dp), intent(out)              :: target_point(6)
+        double precision, intent(out)              :: target_point(6)
 
         call b_spline_interpolate_perturbed_conds(n_mnfd, J, target_point)
 
@@ -236,7 +248,6 @@ module ancillary_data
         double precision    :: tmani
 
         double precision    :: t_epoch
-        double precision    :: transfer_time
         double precision    :: t_end
         double precision    :: n_mnfd
         
@@ -263,10 +274,9 @@ module ancillary_data
             end do
 
             t_epoch = current_working_state(1)
-            transfer_time = current_working_state(2)
-            t_end = current_working_state(3)
-            n_mnfd = current_working_state(4)
-            J = current_working_state(5)
+            t_end = current_working_state(2)
+            n_mnfd = current_working_state(3)
+            J = current_working_state(4)
 
             call generate_ancillary_data(t_epoch, transfer_time, t_end, n_mnfd, J, &
                                         r1, v1, r2, v2, target_point)
@@ -294,7 +304,7 @@ module ancillary_data
 
     subroutine write_pareto_body(final_velocity, current_working_state, r1, v1, r2, v2, target_point)
 
-        double precision, intent(in)    :: current_working_state(5)
+        double precision, intent(in)    :: current_working_state(N)
         double precision, intent(in)    :: final_velocity
 
         double precision, intent(in)    :: r1(6)
@@ -303,7 +313,7 @@ module ancillary_data
         double precision, intent(in)    :: v2(3)
         double precision, intent(in)    :: target_point(6)
         
-        write(iunit, *) final_velocity, current_working_state, r1, v1, r2, v2, target_point
+        write(iunit, *) final_velocity, transfer_time, current_working_state, r1, v1, r2, v2, target_point
 
     end subroutine write_pareto_body
 
