@@ -31,7 +31,6 @@ As part of ongoing research into Asteroid Retrieval in the CR3BP, the Fortran As
 
 * The Fortran Asteroid Prefilter: Takes a given NEO database and filters it according to a Hohmann transfer approximation to obtain _retrieval candidates_.
 * The Fortran Asteroid Retrieval Tool: Takes a given list of _retrieval candidates_ and optimises their transfers for minimum transfer velocity and whether the object can be considered an ERO.
-* The Pareto Front Generation Code: Takes a given input ERO and obtains its Pareto front.
 * A script, written in Expect, to automatically extract epehemerides from the JPL HORIZONS system.
 * MIDACO Wrappers, designed to interface C versions of MIDACO with Fortran objective function codes.
 
