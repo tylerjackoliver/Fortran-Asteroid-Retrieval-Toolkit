@@ -13,7 +13,6 @@ module problem_parameters
     ! targ_can: SPK ID of the target candidate
     ! datafile: Location of target dataset file
     ! dataset: Allocatable double-precision array that contains the target section
-    ! is_loaded: Whether the dataset has been loaded into memory
     ! minimum_transfer_time: Minimum duration of Lambert arc (optimiser constraint)
     ! maximum_transfer_time: Maximum duration of Lambert arc (optimiser constraint)
     !
