@@ -11,7 +11,7 @@ The optimisation problem is defined by four continuous variables:
  * n<sub>mnfd</sub>: Discretisation along the target periodic orbit (interpolated; dimensionless)
  * K: Discretisation along the family of periodic orbits (interpolated; dimensionless)
 
-This parallel version contains routines required optimise simultaneously on `m` cores.
+This parallel version contains routines to optimise simultaneously on `m` cores. Data is shared across nodes by an initial MPI broadcast, and then each node - or system with shared memory - accesses its own copy using MPI memory spaces.
 
 This program requires support for the MPI parallel programming paradigm, from a minimum of version 3. The program has been tested using MPICH, OpenMPI and Intel MPI
 on GNU and Intel compilers.
@@ -25,6 +25,14 @@ To build this application, alter the compiler used by changing the `FC=` environ
 Once done, re-comment or de-comment the compiler options in `CMakeLists.txt` to match whether the GNU or Intel compiler is in use.
 
 Running `build.sh` should automatically create the required folders, generate the makefiles and compile and link the program.
+
+** It is up to the user to provide a valid MIDACO object file to allow this version of the code to compile. This includes an additional license key, defined in `licenseKey.h` in the `src/` directory. **
+
+If you do not have a valid MIDACO license, then the codes may be adapted to suit your problem. The process is this:
+
+* In `variable_initialisation.f90`, adjust the definitions for variables used by MIDACO (noted as such in in-line comments) by adjusting them for your own solver. These are located at the top of the file. 
+* In the `variable_init` and `intermediate_variable_init` subroutines in `variable_initialisation.f90`, adjust the initialisation of MIDACO variables to suit your own solver.
+* In `main.f90`, the `run_global_optim` subroutine is a wrapper for the required solver calls. Adjust this to your own requirements.
 
 ### Dependencies
 
@@ -108,9 +116,10 @@ module problem_parameters
 end module problem_parameters
 ```
 
+I _strongly_ recommend using dedicated computing facilities to solve the optimisation problem. By default, the guesses will be initialised to random throughout the domain but MIDACO converges very quickly. 10 minutes was found to be optimal in this case, on 60 workers.
+
 ### Tested compilers and platforms
 
 MacOS, gfortran-8, gcc-8, ifort, intel-mpi, OpenMPI, MPICH, Python 3.6.
-
 Ubuntu, gfortran-7, gcc-7, ifort, intel-mpi, OpenMPI, MPICH, Python 3.4.
 Red Hat, gfortran-7, gcc-7, ifort, intel-mpi, OpenMPI, MPICH, Python 3.4.
