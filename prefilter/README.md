@@ -6,7 +6,7 @@ This program implements the prefiltering methodology for identifying _retrieval 
 
 To build this application, alter the compiler used by changing the `FC=` environment variable to the command which invokes the correct MPI wrapper to your compiler of choice. For example, `FC=mpifort`, `FC=mpif90`, `FC=mpiifort`.
 
-Once done, re-comment or de-comment the compiler options in `CMakeLists.txt` to match whether the GNU or Intel compiler is in use.
+Once done, re-comment or de-comment the compiler options in `CMakeLists.txt` to match whether the GNU or Intel compiler is being wrapped by MPI.
 
 Running `build.sh` should automatically create the required folders, generate the makefiles and compile and link the program.
 
