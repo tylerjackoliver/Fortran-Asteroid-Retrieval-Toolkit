@@ -12,6 +12,8 @@
   <h3 align="center">FART: Fortran Asteroid Retrieval Toolkit</h3>
 </p>
 
+## This repository is still being updated.
+
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 
@@ -27,7 +29,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-As part of ongoing research into Asteroid Retrieval in the CR3BP, the Fortran Asteroid Retrieval Toolkit provides the basic computational tools to find Easily Retrievable Objects (EROs) for a given database of Near-Earth Objects, as in (Tyler, J., Wittig, A., 2020 \[Preprint\]). Several tools, written largely in Fortran, are included:
+As part of ongoing research into Asteroid Retrieval in the CR3BP, the Fortran Asteroid Retrieval Toolkit provides the basic computational tools to find Easily Retrievable Objects (EROs) for a given database of Near-Earth Objects. Several tools, written largely in Fortran, are included:
 
 * The Fortran Asteroid Prefilter: Takes a given NEO database and filters it according to a Hohmann transfer approximation to obtain _retrieval candidates_.
 * The Fortran Asteroid Retrieval Tool: Takes a given list of _retrieval candidates_ and optimises their transfers for minimum transfer velocity and whether the object can be considered an ERO.
