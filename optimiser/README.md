@@ -11,7 +11,7 @@ Both are written in Fortran, compliant to the 2008 standard, and require the MPI
 
 ## How do they work?
 
-![flowchart](media/variable_init_flowchart.png)
+![flowchart](../images/variable_init_flowchart.png)
 
 The flowchart above gives the high-level overview of the variable initialisation routines and the parallelism implementation in the variable initialisation and cost function. 
 
