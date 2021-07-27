@@ -10,7 +10,7 @@ authors:
     given-names: Alex
 cff-version: "1.1.0"
 date-released: 2021-03-26
-doi: "https://doi.org/10.1016/j.actaastro.2021.03.002"
+doi: "10.1016/j.actaastro.2021.03.002"
 license: "AGPL-3.0"
 message: "If you use this software, please cite it as below."
 title: "Fortran Asteroid Retrieval Toolkit"
